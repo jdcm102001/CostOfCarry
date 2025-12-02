@@ -283,6 +283,9 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (loanAction === 'borrow' && loanAmt > 0) {
         const lim = Math.max(0, credit() - S.loans);
+        // Debug logging
+        console.log('DEBUG - loanAmt:', loanAmt, 'lim:', lim, 'credit():', credit(), 'S.loans:', S.loans, 'nwStart():', nwStart());
+        console.log('DEBUG - Check:', loanAmt, '>', lim + 0.001, '=', loanAmt > lim + 0.001);
         // Use tolerance for floating point comparison
         if (loanAmt > lim + 0.001) {
           showError('Borrow exceeds credit limit.');
