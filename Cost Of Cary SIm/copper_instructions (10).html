@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Copper Trader — Instructions</title>
+  <style>
+    :root {
+      --teal: #0d7377;
+      --teal-dark: #095456;
+      --gold: #e8a838;
+      --red: #c23b22;
+      --cream: #faf8f5;
+      --white: #ffffff;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-600: #666666;
+      --gray-800: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+      min-height: 100vh;
+      padding: 24px;
+      color: var(--gray-800);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      background: var(--teal);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      box-shadow: 0 4px 12px rgba(13, 115, 119, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(13, 115, 119, 0.4);
+    }
+
+    .btn-container {
+      text-align: center;
+      margin-top: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Copper Trader</h1>
+    <div class="subtitle">Instructions</div>
+  </div>
+
+  <div class="card">
+    <h2>Object of the Game</h2>
+    <p>To make as much money as possible speculating in the copper market over 10 years.</p>
+
+    <h2>How to Play</h2>
+    <p>Each year you must choose whether to buy or sell copper (or neither), and whether to borrow money or repay existing loans (or neither). Use the controls at the bottom of the game to indicate what you want to do. When you're ready, click "Next Year" to see what happens. The game lasts for 10 turns, each one year long. You can restart whenever you want by clicking the "Restart" button.</p>
+    <p>The game will be most interesting if you try to imagine you're doing this for real. Don't just guess — think carefully about what to do at each turn.</p>
+
+    <h2>What the Display Shows</h2>
+    <p>The game display has several areas. The left panel shows your assets: any cash you have on hand plus the value of any copper you own at the current price. The middle panel shows your liabilities: the value of any loans you've taken out, the amount of interest due on your loans at the end of this year, and your net worth (which is the difference between your assets and the liabilities you owe to other people).</p>
+    <p>The right panel shows market information: the current price of copper per pound, and the price of copper for delivery next year. In this game there are no random shocks, so the future price shown will be exactly equal to the true price of copper next year.</p>
+
+    <h2>Some Helpful Information</h2>
+    <p>Initially, you have no money and no copper. To buy copper, you'll have to borrow money. The interest rate on loans is 10% per year. The bank processes loans quickly, so you may borrow money AND buy copper in the same turn. In this simulation, the only way to grow your wealth is through copper trading — there are no other investment opportunities available.</p>
+    <p>You have a credit limit, however. The bank will not loan you more in total than $200 plus the net worth of your business. For example, if your net worth is $10 and you have already borrowed $150, the bank would allow you to borrow up to $60 more: $210 - $150. On the other hand, if you had paid off your loans earlier and had a net worth of $10, the bank would let you borrow the full $210.</p>
+    <p>When you borrow money, you must pay interest. Each year you will pay 10% interest on your outstanding loans at the beginning of the year. This is shown on the balance sheet as "Interest Due". One very important thing to remember: the bank doesn't accept copper — you must pay interest in cash. That means you must have enough cash on hand at the end of each turn to meet your interest payments (after any buying, selling, borrowing, and repaying activities). If you do not have enough cash, you will default on your loans and the game will be over.</p>
+    <p>Remember that interest payments are compulsory and come directly out of your cash balance automatically — you do not use "Repay" to pay them. "Repay" is used to repay the principal on your loans (it's the opposite of "Borrow"). For example, suppose you have $50 cash, $200 of loans, owe $20 of interest and select "Repay $40". Here's what will happen: $40 of cash will be used to pay off $40 of loans, bringing your loan balance to $160. However, you'll only have $10 of cash left to pay the $20 of interest — and you'll be in trouble with the bank.</p>
+    <p>During each turn your instructions will be processed in the following order: borrowing, selling, buying, and repaying. After that, interest payments will be deducted from your cash balance.</p>
+
+    <h2>End of Game</h2>
+    <p>The game ends at the beginning of year 11. Your score will be your net worth at that point. The game will also tell you how well you did relative to "par", a reference score. If you're achieving 90%-100% of par, you've understood the key concepts. If you are very careful, however, you can score above par.</p>
+
+    <div class="btn-container">
+      <a class="btn" href="copper_game.html">Start the Game →</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

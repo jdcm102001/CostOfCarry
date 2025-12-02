@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Copper Trader</title>
+<style>
+  :root {
+    --teal: #0d7377;
+    --teal-dark: #095456;
+    --teal-light: #14a3a8;
+    --gold: #e8a838;
+    --gold-dark: #c98a1f;
+    --red: #c23b22;
+    --red-dark: #9a2f1b;
+    --cream: #faf8f5;
+    --white: #ffffff;
+    --gray-100: #f5f5f5;
+    --gray-200: #e5e5e5;
+    --gray-600: #666666;
+    --gray-800: #333333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: var(--gray-800);
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--white);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin-bottom: 8px;
+  }
+
+  .header .year-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--gray-800);
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .header .timer {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: var(--white);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    margin-left: 12px;
+  }
+
+  .header .instructions-link {
+    display: block;
+    margin-top: 8px;
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .header .instructions-link:hover {
+    color: var(--white);
+    text-decoration: underline;
+  }
+
+  /* Error Banner */
+  .error-banner {
+    background: var(--red);
+    color: var(--white);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: 500;
+    display: none;
+    box-shadow: 0 2px 8px rgba(194, 59, 34, 0.3);
+  }
+
+  .error-banner.visible { display: block; }
+
+  /* Main Card */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+
+  /* Dashboard Grid */
+  .dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--gray-200);
+  }
+
+  .panel {
+    background: var(--white);
+    padding: 20px;
+  }
+
+  .panel-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-600);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-header .dot.teal { background: var(--teal); }
+  .panel-header .dot.red { background: var(--red); }
+  .panel-header .dot.gold { background: var(--gold); }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-label { color: var(--gray-600); }
+
+  .stat-value {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+
+  .stat-value.highlight {
+    color: var(--teal);
+    font-size: 16px;
+  }
+
+  .stat-value.negative { color: var(--red); }
+
+  /* Market Panel Highlight */
+  .panel.market {
+    background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+  }
+
+  .price-display {
+    text-align: center;
+    padding: 12px 0;
+  }
+
+  .price-current {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--teal);
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+
+  .price-label {
+    font-size: 11px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .price-next {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--gray-200);
+    text-align: center;
+  }
+
+  .price-next-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--gold-dark);
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+
+  /* Actions Section */
+  .actions-section {
+    padding: 24px;
+    background: var(--gray-100);
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .actions-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-600);
+    margin-bottom: 16px;
+  }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .action-box {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 16px;
+    border: 2px solid var(--gray-200);
+    transition: border-color 0.2s;
+  }
+
+  .action-box:focus-within {
+    border-color: var(--teal);
+  }
+
+  .action-box-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .action-box-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--gray-800);
+  }
+
+  .action-box-title.copper { color: var(--gold-dark); }
+  .action-box-title.loans { color: var(--teal); }
+
+  .toggle-group {
+    display: flex;
+    background: var(--gray-100);
+    border-radius: 6px;
+    padding: 2px;
+  }
+
+  .toggle-group label {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    color: var(--gray-600);
+  }
+
+  .toggle-group input { display: none; }
+
+  .toggle-group input:checked + span {
+    background: var(--white);
+    color: var(--gray-800);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .toggle-group label span {
+    display: block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-row label {
+    font-size: 13px;
+    color: var(--gray-600);
+    min-width: 70px;
+  }
+
+  .input-row input[type="number"] {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input-row input[type="number"]:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.1);
+  }
+
+  .amount-preview {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 8px;
+    font-family: 'SF Mono', 'Consolas', monospace;
+    background: var(--gray-100);
+    padding: 6px 10px;
+    border-radius: 4px;
+  }
+
+  /* Buttons */
+  .button-row {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+  }
+
+  .btn {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--teal);
+    color: var(--white);
+    flex: 1;
+    box-shadow: 0 4px 12px rgba(13, 115, 119, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: var(--teal-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(13, 115, 119, 0.4);
+  }
+
+  .btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+  }
+
+  .btn-secondary:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+  }
+
+  /* Footer */
+  .footer {
+    padding: 16px 24px;
+    background: var(--gray-100);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  .footer a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  /* Game Over */
+  .gameover-card {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    padding: 32px;
+    text-align: center;
+  }
+
+  .gameover-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .gameover-title.win { color: var(--teal); }
+  .gameover-title.lose { color: var(--red); }
+
+  .score-display {
+    background: var(--gray-100);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+
+  .score-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--teal);
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+
+  .score-label {
+    font-size: 12px;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  .par-info {
+    font-size: 14px;
+    color: var(--gray-600);
+    margin: 16px 0;
+  }
+
+  .performance-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .performance-badge.excellent { background: #dcfce7; color: #166534; }
+  .performance-badge.good { background: #fef9c3; color: #854d0e; }
+  .performance-badge.poor { background: #fee2e2; color: #991b1b; }
+
+  /* Message Box */
+  .message-box {
+    padding: 16px 20px;
+    margin: 0 20px 0 20px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .message-box .message-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+  }
+
+  .message-box .message-content {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  .message-box .message-content.positive {
+    background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+    border-left: 4px solid #16a34a;
+    color: #166534;
+  }
+
+  .message-box .message-content.negative {
+    background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+    border-left: 4px solid var(--gold);
+    color: #92400e;
+  }
+
+  .message-box .message-content.danger {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left: 4px solid var(--red);
+    color: #991b1b;
+  }
+
+  .message-box .message-title {
+    font-weight: 600;
+  }
+
+  .message-box .message-detail {
+    margin-top: 4px;
+    opacity: 0.9;
+  }
+
+  /* Timeline Table */
+  .timeline-section {
+    margin-top: 24px;
+    text-align: left;
+  }
+
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--gray-800);
+  }
+
+  .timeline-table {
+    width: 100%;
+    font-size: 11px;
+    border-collapse: collapse;
+    font-family: 'SF Mono', 'Consolas', monospace;
+  }
+
+  .timeline-table th {
+    background: var(--teal);
+    color: var(--white);
+    padding: 8px 6px;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  .timeline-table td {
+    padding: 6px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .timeline-table tr:nth-child(even) {
+    background: var(--gray-100);
+  }
+
+  .timeline-note {
+    font-size: 11px;
+    color: var(--gray-600);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  .hidden { display: none !important; }
+
+  /* Leaderboard Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  }
+
+  .modal h3 {
+    font-size: 20px;
+    color: var(--teal);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .modal input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 16px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .modal input[type="text"]:focus {
+    outline: none;
+    border-color: var(--teal);
+  }
+
+  .modal-buttons {
+    display: flex;
+    gap: 12px;
+  }
+
+  .modal-buttons .btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .btn-ghost {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+    transition: all 0.2s;
+  }
+
+  .btn-ghost:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+  }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .dashboard { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr; }
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Copper Trader</h1>
+    <span class="year-badge" id="yearBadge">Year 1 of 10</span>
+    <span class="timer" id="timer">00:00</span>
+    <a href="copper_instructions.html" class="instructions-link">View Instructions</a>
+  </div>
+
+  <!-- Error Banner -->
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- Main Game -->
+  <div id="main" class="card">
+    <!-- Dashboard -->
+    <div class="dashboard">
+      <!-- Assets Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="dot teal"></span>
+          Assets
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Cash</span>
+          <span class="stat-value">$<span id="cash">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Value of Copper</span>
+          <span class="stat-value">$<span id="valCopper">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Copper Owned</span>
+          <span class="stat-value highlight"><span id="lbs">0</span> lb</span>
+        </div>
+      </div>
+
+      <!-- Liabilities Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="dot red"></span>
+          Liabilities
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Loans</span>
+          <span class="stat-value">$<span id="loans">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Interest Due</span>
+          <span class="stat-value">$<span id="intPay">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Net Worth</span>
+          <span class="stat-value highlight" id="netWorth">$0</span>
+        </div>
+      </div>
+
+      <!-- Market Panel -->
+      <div class="panel market">
+        <div class="panel-header">
+          <span class="dot gold"></span>
+          Market
+        </div>
+        <div class="price-display">
+          <div class="price-label">Current Price</div>
+          <div class="price-current">$<span id="spot">4</span>/lb</div>
+        </div>
+        <div class="price-next">
+          <div class="price-label">Next Year</div>
+          <div class="price-next-value">$<span id="fwd">4.6</span>/lb</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Box -->
+    <div class="message-box" id="messageBox">
+      <div class="message-label">Messages</div>
+      <div class="message-content" id="messageContent">
+        <span class="message-title" id="messageTitle">Nothing to report.</span>
+        <div class="message-detail" id="messageDetail"></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section">
+      <div class="actions-title">Actions for Year <span id="actYear">1</span></div>
+      <div class="action-grid">
+        <!-- Copper Action -->
+        <div class="action-box">
+          <div class="action-box-header">
+            <span class="action-box-title copper">Copper</span>
+            <div class="toggle-group">
+              <label><input type="radio" name="copperAction" value="buy" checked><span>Buy</span></label>
+              <label><input type="radio" name="copperAction" value="sell"><span>Sell</span></label>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Amount</label>
+            <input id="copperAmount" type="number" min="0" step="1" value="0" placeholder="0">
+            <span style="color: var(--gray-600); font-size: 13px;">lb</span>
+          </div>
+          <div class="amount-preview" id="amountPrice">= $0.00</div>
+        </div>
+
+        <!-- Loan Action -->
+        <div class="action-box">
+          <div class="action-box-header">
+            <span class="action-box-title loans">Loans</span>
+            <div class="toggle-group">
+              <label><input type="radio" name="loanAction" value="borrow" checked><span>Borrow</span></label>
+              <label><input type="radio" name="loanAction" value="repay"><span>Repay</span></label>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Amount</label>
+            <input id="loanAmount" type="number" min="0" step="1" value="0" placeholder="0">
+            <span style="color: var(--gray-600); font-size: 13px;">$</span>
+          </div>
+          <div class="amount-preview">Credit limit: $<span id="creditLimit">1000.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="button-row">
+      <button class="btn btn-secondary" id="restart">Restart</button>
+      <button class="btn btn-primary" id="next">Next Year →</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>Interest: 10%/year • Credit: $200 + Net Worth</span>
+      <a href="copper_instructions.html">Rules</a>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="gameover" class="gameover-card hidden">
+    <div class="gameover-title" id="gameoverTitle">Game Complete</div>
+    <div id="gameoverMsg"></div>
+    <div class="score-display">
+      <div class="score-value" id="finalScore">$0.00</div>
+      <div class="score-label">Final Net Worth</div>
+    </div>
+    <div class="par-info" id="parInfo"></div>
+    <div class="par-info" id="timeInfo"></div>
+    <div class="performance-badge" id="performanceBadge"></div>
+    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+      <button class="btn btn-secondary" id="restart2">Play Again</button>
+      <button class="btn btn-primary" id="submitScore">Submit to Leaderboard</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Submit Your Score</h3>
+      <p style="text-align: center; margin-bottom: 16px; color: var(--gray-600);">
+        Score: <b id="modalScore">$0</b> • Time: <b id="modalTime">00:00</b>
+      </p>
+      <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+      <div class="modal-buttons">
+        <button class="btn-ghost" id="cancelSubmit">Cancel</button>
+        <button class="btn btn-primary" id="confirmSubmit">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.onerror = function(message, source, lineno, colno, error){
+  showError('JavaScript error: ' + message + ' @ ' + lineno + ':' + colno);
+};
+
+(function(){
+  const YEARS=10, INTEREST=10, LINE_OF_CREDIT=200, R=INTEREST/100;
+
+  // ===== Fixed Market Path ($/lb) - $3-$10 range =====
+  // +15%, +8.7%, -12%, +13.6%, +12%, +7.1%, +6.7%, +6.3%, +11.8%, -7.9%
+  const FIXED_PRICES = [
+    { year: 1,  spot: 4.00, next: 4.60 },  // +15% contango
+    { year: 2,  spot: 4.60, next: 5.00 },  // +8.7% backwardation
+    { year: 3,  spot: 5.00, next: 4.40 },  // -12% backwardation
+    { year: 4,  spot: 4.40, next: 5.00 },  // +13.6% contango
+    { year: 5,  spot: 5.00, next: 5.60 },  // +12% contango
+    { year: 6,  spot: 5.60, next: 6.00 },  // +7.1% backwardation
+    { year: 7,  spot: 6.00, next: 6.40 },  // +6.7% backwardation
+    { year: 8,  spot: 6.40, next: 6.80 },  // +6.3% backwardation
+    { year: 9,  spot: 6.80, next: 7.60 },  // +11.8% contango
+    { year: 10, spot: 7.60, next: 7.00 }   // -7.9% backwardation
+  ];
+
+  function generateMarketPath(){
+    return FIXED_PRICES.map(p => ({
+      year: p.year,
+      spot: p.spot,
+      next: p.next,
+      carry: (p.next / p.spot) - 1
+    }));
+  }
+
+  // ===== State =====
+  let MARKET = [];
+  let S={year:1,cash:0,loans:0,lbs:0,spot:4.00,over:false,loans_beg:0,negEquityStreak:0,prevNW:0,negativeCount:0};
+  
+  // ===== Timer =====
+  let timerStart = null;
+  let timerInterval = null;
+  let finalTime = 0;
+  
+  function startTimer(){
+    timerStart = Date.now();
+    timerInterval = setInterval(updateTimerDisplay, 1000);
+    updateTimerDisplay();
+  }
+  
+  function stopTimer(){
+    if(timerInterval) clearInterval(timerInterval);
+    finalTime = timerStart ? Math.floor((Date.now() - timerStart) / 1000) : 0;
+    return finalTime;
+  }
+  
+  function updateTimerDisplay(){
+    if(!timerStart) return;
+    const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    document.getElementById('timer').textContent = 
+      String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+  
+  function formatTime(seconds){
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+
+  // ===== Helpers =====
+  const toInt=n=>Math.max(0,Math.floor(Number(n)||0));
+  const toNum=n=>Math.max(0,Number(n)||0);
+  const intv=x=>x*INTEREST/100;  // No floor - use decimal precision
+  const nwStart=()=> (S.cash+S.lbs*S.spot)-(S.loans+intv(S.loans_beg));
+  const nwAfter=()=> (S.cash+S.lbs*S.spot)-S.loans;
+  const credit=()=> LINE_OF_CREDIT + nwStart();
+  const fmt=n=>{ 
+    const v = Number(n); 
+    if(Number.isInteger(v)) return String(v);
+    const rounded = Math.round(v * 100) / 100;
+    if(Number.isInteger(rounded)) return String(rounded);
+    return rounded.toFixed(2).replace(/\.?0+$/, ''); 
+  };
+  const fmtInt=n=>String(Math.max(0,Math.floor(Number(n)||0)));
+
+  function showError(t){
+    const box=document.getElementById('errorBanner');
+    if(!t){ box.classList.remove('visible'); box.textContent=''; }
+    else { box.classList.add('visible'); box.textContent=t; }
+  }
+
+  function showMessage(type, title, detail){
+    const content = document.getElementById('messageContent');
+    const titleEl = document.getElementById('messageTitle');
+    const detailEl = document.getElementById('messageDetail');
+    
+    content.classList.remove('positive', 'negative', 'danger');
+    
+    if(!type){
+      titleEl.textContent = 'Nothing to report.';
+      detailEl.textContent = '';
+      return;
+    }
+    
+    content.classList.add(type);
+    titleEl.textContent = title;
+    detailEl.textContent = detail || '';
+  }
+
+  function updateAmountPrice(){
+    const amt = Number(document.getElementById('copperAmount').value || 0);
+    const spot = S.spot;
+    const total = amt * spot;
+    document.getElementById('amountPrice').textContent = '= $' + (isFinite(total)? fmt(total) : '0');
+  }
+
+  function updateCreditLimit(){
+    const available = Math.max(0, credit() - S.loans);
+    document.getElementById('creditLimit').textContent = fmt(available);
+  }
+
+  function render(){
+    document.getElementById('yearBadge').textContent = `Year ${S.year} of 10`;
+    document.getElementById('actYear').textContent = S.year;
+    document.getElementById('cash').textContent = fmt(S.cash);
+    document.getElementById('valCopper').textContent = fmt(S.lbs * S.spot);
+    document.getElementById('loans').textContent = fmt(S.loans);
+    document.getElementById('intPay').textContent = fmt(intv(S.loans_beg));
+    
+    const nw = nwStart();
+    const nwEl = document.getElementById('netWorth');
+    nwEl.textContent = '$' + fmt(Math.abs(nw));
+    if(nw < 0) {
+      nwEl.textContent = '-$' + fmt(Math.abs(nw));
+      nwEl.classList.add('negative');
+    } else {
+      nwEl.classList.remove('negative');
+    }
+    
+    document.getElementById('lbs').textContent = fmtInt(S.lbs);
+    document.getElementById('spot').textContent = fmt(S.spot);
+    
+    if (MARKET.length >= S.year){
+      document.getElementById('fwd').textContent = fmt(MARKET[S.year-1].next);
+    }
+    
+    updateAmountPrice();
+    updateCreditLimit();
+  }
+
+  function showGameover(title, isWin){
+    document.getElementById('main').classList.add('hidden');
+    document.getElementById('gameover').classList.remove('hidden');
+    const titleEl = document.getElementById('gameoverTitle');
+    titleEl.textContent = title;
+    titleEl.className = 'gameover-title ' + (isWin ? 'win' : 'lose');
+  }
+
+  // ===== PAR uses same MARKET path =====
+  function simulatePar(){
+    const path = MARKET;
+    function clone(){ return {year:1,cash:0,loans:0,lbs:0,loans_beg:0}; }
+    function interestDue(lb){ return lb*(INTEREST/100); }  // No floor - use decimal precision
+    function nwS(s){ const spot=path[s.year-1].spot; return (s.cash + s.lbs*spot) - (s.loans + interestDue(s.loans_beg)); }
+    function creditS(s){ return LINE_OF_CREDIT + nwS(s); }
+    function step(st){
+      const tl=[];
+      while(st.year<=YEARS){
+        const pr = path[st.year-1];
+        const spot = pr.spot, next = pr.next, carry = pr.carry;
+        const regime = carry > R+1e-9 ? 'contango' : (carry < R-1e-9 ? 'backwardation' : 'neutral');
+        const intThis = interestDue(st.loans_beg);
+        let didBorrow=0,didBuy=0,didSell=0,didRepay=0;
+
+        if(regime==='contango'){
+          let limit = Math.max(0, creditS(st) - st.loans);
+          let needInt = Math.max(0, intThis - st.cash);
+          let b1 = Math.min(needInt, limit);
+          if(b1>0){ st.loans+=b1; st.cash+=b1; didBorrow+=b1; limit-=b1; }
+          let buyBudget = Math.max(0, st.cash - intThis) + limit;
+          let maxBuy = Math.floor(buyBudget / spot);
+          if(maxBuy>0){
+            let shortfall = Math.max(0, maxBuy*spot - Math.max(0, st.cash - intThis));
+            let b2 = Math.min(shortfall, limit);
+            if(b2>0){ st.loans+=b2; st.cash+=b2; didBorrow+=b2; limit-=b2; }
+            let execBuy = Math.floor(Math.max(0, st.cash - intThis) / spot);
+            execBuy = Math.min(execBuy, maxBuy);
+            if(execBuy>0){ st.lbs+=execBuy; st.cash-=execBuy*spot; didBuy+=execBuy; }
+          }
+        } else if(regime==='backwardation'){
+          if(st.lbs>0){ didSell=st.lbs; st.cash+=st.lbs*spot; st.lbs=0; }
+          if(st.cash>0 && st.loans>0){ didRepay=Math.min(st.cash, st.loans); st.loans-=didRepay; st.cash-=didRepay; }
+        }
+        if(st.cash<intThis){
+          const need=intThis-st.cash;
+          const extraSell=Math.min(Math.ceil(need/spot), st.lbs);
+          if(extraSell>0){ didSell+=extraSell; st.lbs-=extraSell; st.cash+=extraSell*spot; }
+        }
+        if(st.cash<intThis){ return {score:-Infinity,timeline:[]}; }
+        st.cash-=intThis;
+        tl.push({year:st.year, regime, spot:spot, next:next, borrow:didBorrow, buy:didBuy, sell:didSell, repay:didRepay, interest:intThis, cash:st.cash, loans:st.loans, lbs:st.lbs});
+        st.year+=1; st.loans_beg=st.loans;
+      }
+      const lastNext = path[YEARS-1].next;
+      return { score: (st.cash + st.lbs*lastNext) - st.loans, timeline: tl };
+    }
+    const best = step(clone());
+    if(!Number.isFinite(best.score) || best.score<=0){ best.score=1; }
+    return best;
+  }
+
+  let PAR=null;
+
+  function processTurn(){
+    try{
+      showError('');
+      const prevNW = S.prevNW;
+      const intThis=intv(S.loans_beg);
+      const copperAction=(document.querySelector('input[name="copperAction"]:checked')||{value:'buy'}).value;
+      const loanAction=(document.querySelector('input[name="loanAction"]:checked')||{value:'borrow'}).value;
+      const copperAmt=toInt(document.getElementById('copperAmount').value);
+      const loanAmt=toNum(document.getElementById('loanAmount').value);
+
+      if(Number.isNaN(copperAmt) || Number.isNaN(loanAmt)){ showError('Invalid input.'); return; }
+
+      if(loanAction==='borrow'&&loanAmt>0){
+        const lim=Math.max(0,credit()-S.loans);
+        if(loanAmt>lim){ showError('Borrow exceeds credit limit.'); return; }
+        S.loans+=loanAmt; S.cash+=loanAmt;
+      }
+      if(copperAction==='sell'&&copperAmt>0){
+        if(copperAmt>S.lbs){ showError('Cannot sell more lbs than owned.'); return; }
+        S.lbs-=copperAmt; S.cash+=copperAmt*S.spot;
+      }
+      if(copperAction==='buy'&&copperAmt>0){
+        const cost=copperAmt*S.spot;
+        if(cost>S.cash){ showError('Not enough cash to buy that many lbs.'); return; }
+        S.lbs+=copperAmt; S.cash-=cost;
+      }
+      if(loanAction==='repay'&&loanAmt>0){
+        const pay=Math.min(loanAmt,S.cash,S.loans);
+        if(pay<=0){ showError('Nothing to repay (check cash and loans).'); return; }
+        S.loans-=pay; S.cash-=pay;
+      }
+
+      if(S.cash < intThis - 0.001){ 
+        showError(`Interest payment of $${intThis.toFixed(2)} not covered.`); 
+        gameOver(`Interest payment of $${intThis.toFixed(2)} not covered`, false); 
+        return; 
+      }
+      S.cash -= intThis;
+      // Prevent tiny negative cash from floating point errors
+      if(S.cash < 0 && S.cash > -0.01) S.cash = 0;
+
+      // Calculate what net worth will be displayed at start of NEXT turn
+      // Next turn: spot = this year's "next" price, loans_beg = current loans, interest = 10% of current loans
+      const nextSpot = MARKET[S.year-1].next;  // This year's "next" becomes next year's "spot"
+      const nextIntDue = intv(S.loans);  // Interest on current loans (which become loans_beg next turn)
+      const displayedNW = (S.cash + S.lbs * nextSpot) - (S.loans + nextIntDue);
+      
+      // Track negative net worth (use displayed NW which includes upcoming interest)
+      if(displayedNW < 0){
+        S.negEquityStreak += 1;
+        S.negativeCount += 1;
+        
+        if(S.negativeCount >= 3){ 
+          gameOver("You've been fired for excessive losses", false, `Your net worth has been negative ${S.negativeCount} times.`); 
+          return; 
+        }
+        if(S.negEquityStreak >= 3){ 
+          gameOver('Negative equity for 3 consecutive years', false); 
+          return; 
+        }
+      } else { 
+        S.negEquityStreak = 0; 
+      }
+
+      // Generate message based on net worth change (comparing displayed values)
+      const nwChange = displayedNW - prevNW;
+      let msgType = null, msgTitle = '', msgDetail = '';
+      
+      const isFirstTurn = (S.year === 1 && prevNW === 0);
+      const noChange = Math.abs(nwChange) < 0.01;  // Tolerance for floating point
+      
+      if(noChange && displayedNW >= 0) {
+        // No meaningful change - no message needed
+      } else if(displayedNW < 0 && S.negativeCount >= 2) {
+        msgType = 'danger';
+        msgTitle = '⚠️ Final Warning!';
+        msgDetail = `Your net worth is negative for the ${S.negativeCount}${S.negativeCount===2?'nd':'rd'} time. One more and you're fired!`;
+      } else if(displayedNW < 0) {
+        msgType = 'danger';
+        msgTitle = '😰 Uh oh!';
+        msgDetail = `Your net worth is now -$${fmt(Math.abs(displayedNW))}. Shareholders are angry!`;
+      } else if(nwChange < -0.01) {
+        msgType = 'negative';
+        msgTitle = '📉 Net worth decreased';
+        msgDetail = `Your net worth fell by $${fmt(Math.abs(nwChange))}. Time to rethink your strategy?`;
+      } else if(nwChange > 0.01) {
+        msgType = 'positive';
+        msgTitle = '📈 Nice work!';
+        msgDetail = `Your net worth increased by $${fmt(nwChange)}!`;
+      }
+
+      S.year += 1;
+      if(S.year>YEARS){
+        finishGame();
+        return;
+      }
+      
+      S.prevNW = displayedNW;  // Store what was displayed for next comparison
+      S.loans_beg=S.loans;
+      S.spot = MARKET[S.year-1].spot;
+      document.getElementById('copperAmount').value=0;
+      document.getElementById('loanAmount').value=0;
+      document.querySelector('input[name="copperAction"][value="buy"]').checked=true;
+      document.querySelector('input[name="loanAction"][value="borrow"]').checked=true;
+      
+      showMessage(msgType, msgTitle, msgDetail);
+      render();
+    } catch(e){
+      showError('Handler error: ' + e.message);
+    }
+  }
+
+  let finalScore = 0;
+
+  function finishGame(){
+    stopTimer();
+    if(!PAR) PAR = simulatePar();
+    const lastNext = MARKET[YEARS-1].next;
+    const score = (S.cash + S.lbs*lastNext) - S.loans;
+    finalScore = score;
+    
+    showGameover('Game Complete!', true);
+    document.getElementById('finalScore').textContent = '$' + fmt(score);
+    document.getElementById('timeInfo').textContent = `Time: ${formatTime(finalTime)}`;
+    
+    let pct = 0;
+    if(PAR.score > 0) {
+      pct = Math.round((score/PAR.score)*100);
+      document.getElementById('parInfo').textContent = `Par: $${fmt(PAR.score)} — You achieved ${pct}%`;
+    }
+    
+    const badge = document.getElementById('performanceBadge');
+    if(pct >= 100) {
+      badge.textContent = 'Excellent!';
+      badge.className = 'performance-badge excellent';
+    } else if(pct >= 80) {
+      badge.textContent = 'Good';
+      badge.className = 'performance-badge good';
+    } else {
+      badge.textContent = 'Room to Improve';
+      badge.className = 'performance-badge poor';
+    }
+  }
+
+  function gameOver(msg, isWin, detail){
+    stopTimer();
+    if(!PAR) PAR = simulatePar();
+    showGameover('Game Over', false);
+    let fullMsg = msg;
+    if(detail) fullMsg += ' — ' + detail;
+    document.getElementById('gameoverMsg').textContent = fullMsg;
+    
+    const lastNext = MARKET[Math.min(S.year, YEARS)-1].next;
+    const score = (S.cash + S.lbs*lastNext) - S.loans;
+    finalScore = score;
+    document.getElementById('finalScore').textContent = '$' + fmt(score);
+    document.getElementById('timeInfo').textContent = `Time: ${formatTime(finalTime)}`;
+    
+    document.getElementById('parInfo').textContent = `Par: $${fmt(PAR.score)}`;
+    document.getElementById('performanceBadge').className = 'performance-badge poor';
+    document.getElementById('performanceBadge').textContent = 'Game Over';
+  }
+
+  // ===== Leaderboard =====
+  function getLeaderboard(){
+    const data = localStorage.getItem('copperTraderLeaderboard');
+    return data ? JSON.parse(data) : [];
+  }
+
+  function saveLeaderboard(leaderboard){
+    localStorage.setItem('copperTraderLeaderboard', JSON.stringify(leaderboard));
+  }
+
+  function addToLeaderboard(name, score, time){
+    const leaderboard = getLeaderboard();
+    leaderboard.push({ name, score, time, date: new Date().toISOString() });
+    // Sort by score (desc), then by time (asc) for tiebreaker
+    leaderboard.sort((a, b) => {
+      if(b.score !== a.score) return b.score - a.score;
+      return a.time - b.time;
+    });
+    // Keep top 50
+    if(leaderboard.length > 50) leaderboard.length = 50;
+    saveLeaderboard(leaderboard);
+    return leaderboard;
+  }
+
+  function showLeaderboardModal(){
+    document.getElementById('modalScore').textContent = '$' + fmt(finalScore);
+    document.getElementById('modalTime').textContent = formatTime(finalTime);
+    document.getElementById('playerName').value = '';
+    document.getElementById('leaderboardModal').classList.remove('hidden');
+    document.getElementById('playerName').focus();
+  }
+
+  function hideLeaderboardModal(){
+    document.getElementById('leaderboardModal').classList.add('hidden');
+  }
+
+  function submitScore(){
+    const name = document.getElementById('playerName').value.trim();
+    if(!name) {
+      document.getElementById('playerName').style.borderColor = 'var(--red)';
+      return;
+    }
+    addToLeaderboard(name, finalScore, finalTime);
+    hideLeaderboardModal();
+    // Redirect to leaderboard page
+    window.location.href = 'copper_leaderboard.html';
+  }
+
+  function restart(){
+    MARKET = generateMarketPath();
+    S={year:1,cash:0,loans:0,lbs:0,spot:MARKET[0].spot,over:false,loans_beg:0,negEquityStreak:0,prevNW:0,negativeCount:0};
+    document.getElementById('main').classList.remove('hidden');
+    document.getElementById('gameover').classList.add('hidden');
+    showError('');
+    showMessage(null);
+    document.getElementById('copperAmount').value=0;
+    document.getElementById('loanAmount').value=0;
+    document.querySelector('input[name="copperAction"][value="buy"]').checked=true;
+    document.querySelector('input[name="loanAction"][value="borrow"]').checked=true;
+    document.getElementById('timer').textContent = '00:00';
+    PAR=null;
+    startTimer();
+    render();
+  }
+
+  document.getElementById('next').addEventListener('click', processTurn);
+  document.getElementById('restart').addEventListener('click', restart);
+  document.getElementById('restart2').addEventListener('click', restart);
+  document.getElementById('copperAmount').addEventListener('input', updateAmountPrice);
+  document.getElementById('copperAmount').addEventListener('change', updateAmountPrice);
+  
+  // Leaderboard modal
+  document.getElementById('submitScore').addEventListener('click', showLeaderboardModal);
+  document.getElementById('cancelSubmit').addEventListener('click', hideLeaderboardModal);
+  document.getElementById('confirmSubmit').addEventListener('click', submitScore);
+  document.getElementById('playerName').addEventListener('keypress', function(e){
+    if(e.key === 'Enter') submitScore();
+  });
+  document.getElementById('playerName').addEventListener('input', function(){
+    this.style.borderColor = 'var(--gray-200)';
+  });
+
+  // init
+  restart();
+})();
+</script>
+
+</body>
+</html>

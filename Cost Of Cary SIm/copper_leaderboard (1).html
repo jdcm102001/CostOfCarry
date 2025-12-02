@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Copper Trader — Leaderboard</title>
+  <style>
+    :root {
+      --teal: #0d7377;
+      --teal-dark: #095456;
+      --teal-light: #14a3a8;
+      --gold: #e8a838;
+      --gold-dark: #c98a1f;
+      --red: #c23b22;
+      --cream: #faf8f5;
+      --white: #ffffff;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-600: #666666;
+      --gray-800: #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+      min-height: 100vh;
+      padding: 24px;
+      color: var(--gray-800);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--white);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--teal);
+    }
+
+    .card-header .par-note {
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--gray-100);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gray-600);
+    }
+
+    th:first-child { width: 60px; text-align: center; }
+    th:nth-child(2) { }
+    th:nth-child(3) { text-align: right; }
+    th:nth-child(4) { text-align: right; width: 100px; }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 15px;
+    }
+
+    td:first-child { text-align: center; font-weight: 600; }
+    td:nth-child(3) { text-align: right; font-family: 'SF Mono', 'Consolas', monospace; font-weight: 600; }
+    td:nth-child(4) { text-align: right; font-family: 'SF Mono', 'Consolas', monospace; color: var(--gray-600); }
+
+    tr:hover { background: var(--cream); }
+
+    .rank-1 td:first-child { color: var(--gold-dark); font-size: 18px; }
+    .rank-2 td:first-child { color: #8a8a8a; font-size: 17px; }
+    .rank-3 td:first-child { color: #cd7f32; font-size: 16px; }
+
+    .rank-1 td { background: linear-gradient(90deg, rgba(232, 168, 56, 0.1) 0%, transparent 100%); }
+
+    .positive { color: var(--teal); }
+    .negative { color: var(--red); }
+
+    .empty-state {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--gray-600);
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      background: var(--teal);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(13, 115, 119, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--teal-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-800);
+      box-shadow: none;
+      border: 1px solid var(--gray-200);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-200);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      box-shadow: 0 4px 12px rgba(194, 59, 34, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: var(--red-dark);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      padding: 24px;
+      border-top: 1px solid var(--gray-100);
+    }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 16px;
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🏆 Leaderboard</h1>
+    <div class="subtitle">Copper Trader Rankings</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Top Traders</h2>
+    </div>
+
+    <div id="leaderboardContent">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <div class="button-row">
+      <a href="copper_game.html" class="btn">Play Game</a>
+      <button class="btn btn-secondary" id="clearLeaderboard">Clear Leaderboard</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Ranked by P&L Score (highest first). Time is tiebreaker for equal scores.
+  </div>
+</div>
+
+<script>
+(function(){
+  function getLeaderboard(){
+    const data = localStorage.getItem('copperTraderLeaderboard');
+    return data ? JSON.parse(data) : [];
+  }
+
+  function formatTime(seconds){
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  }
+
+  function fmt(n){
+    const v = Number(n);
+    if(Number.isInteger(v)) return String(v);
+    const rounded = Math.round(v * 100) / 100;
+    if(Number.isInteger(rounded)) return String(rounded);
+    return rounded.toFixed(2).replace(/\.?0+$/, '');
+  }
+
+  function renderLeaderboard(){
+    const leaderboard = getLeaderboard();
+    const container = document.getElementById('leaderboardContent');
+
+    if(leaderboard.length === 0){
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📊</div>
+          <p>No scores yet. Be the first to make the leaderboard!</p>
+          <a href="copper_game.html" class="btn">Play Now</a>
+        </div>
+      `;
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>P&L Score</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    leaderboard.forEach((entry, index) => {
+      const rank = index + 1;
+      const rankClass = rank <= 3 ? `rank-${rank}` : '';
+      const scoreClass = entry.score >= 0 ? 'positive' : 'negative';
+      const scorePrefix = entry.score >= 0 ? '+$' : '-$';
+      const scoreValue = Math.abs(entry.score);
+
+      html += `
+        <tr class="${rankClass}">
+          <td>${rank}</td>
+          <td>${escapeHtml(entry.name)}</td>
+          <td class="${scoreClass}">${scorePrefix}${fmt(scoreValue)}</td>
+          <td>${formatTime(entry.time)}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  function escapeHtml(text){
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function clearLeaderboard(){
+    if(confirm('Are you sure you want to clear the entire leaderboard? This cannot be undone.')){
+      localStorage.removeItem('copperTraderLeaderboard');
+      renderLeaderboard();
+    }
+  }
+
+  document.getElementById('clearLeaderboard').addEventListener('click', clearLeaderboard);
+
+  renderLeaderboard();
+})();
+</script>
+
+</body>
+</html>
