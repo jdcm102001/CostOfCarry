@@ -283,11 +283,11 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (loanAction === 'borrow' && loanAmt > 0) {
         const lim = Math.max(0, credit() - S.loans);
-        // Debug logging
-        console.log('DEBUG - loanAmt:', loanAmt, 'lim:', lim, 'credit():', credit(), 'S.loans:', S.loans, 'nwStart():', nwStart());
-        console.log('DEBUG - Check:', loanAmt, '>', lim + 0.001, '=', loanAmt > lim + 0.001);
-        // Use tolerance for floating point comparison
-        if (loanAmt > lim + 0.001) {
+        // Round both to 2 decimal places to avoid floating point issues
+        const roundedLoanAmt = Math.round(loanAmt * 100) / 100;
+        const roundedLim = Math.round(lim * 100) / 100;
+        console.log('DEBUG - roundedLoanAmt:', roundedLoanAmt, 'roundedLim:', roundedLim, 'pass:', roundedLoanAmt <= roundedLim);
+        if (roundedLoanAmt > roundedLim) {
           showError('Borrow exceeds credit limit.');
           return;
         }
