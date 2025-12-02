@@ -286,7 +286,6 @@ window.onerror = function(message, source, lineno, colno, error) {
         // Round both to 2 decimal places to avoid floating point issues
         const roundedLoanAmt = Math.round(loanAmt * 100) / 100;
         const roundedLim = Math.round(lim * 100) / 100;
-        console.log('DEBUG - roundedLoanAmt:', roundedLoanAmt, 'roundedLim:', roundedLim, 'pass:', roundedLoanAmt <= roundedLim);
         if (roundedLoanAmt > roundedLim) {
           showError('Borrow exceeds credit limit.');
           return;
@@ -306,7 +305,10 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (copperAction === 'buy' && copperAmt > 0) {
         const cost = copperAmt * S.spot;
-        if (cost > S.cash) {
+        // Round to 2 decimals for comparison to handle floating point issues
+        const roundedCost = Math.round(cost * 100) / 100;
+        const roundedCash = Math.round(S.cash * 100) / 100;
+        if (roundedCost > roundedCash) {
           showError('Not enough cash to buy that many lbs.');
           return;
         }
