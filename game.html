@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copper Trader</title>
+  <meta name="description" content="A 10-year copper trading simulation game - learn about cost of carry and commodity trading">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Copper Trader</h1>
+    <span class="year-badge" id="yearBadge">Year 1 of 10</span>
+    <span class="timer" id="timer">00:00</span>
+    <a href="index.html" class="instructions-link">View Instructions</a>
+  </div>
+
+  <!-- Error Banner -->
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- Main Game -->
+  <div id="main" class="card">
+    <!-- Dashboard -->
+    <div class="dashboard">
+      <!-- Assets Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="dot teal"></span>
+          Assets
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Cash</span>
+          <span class="stat-value">$<span id="cash">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Value of Copper</span>
+          <span class="stat-value">$<span id="valCopper">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Copper Owned</span>
+          <span class="stat-value highlight"><span id="lbs">0</span> lb</span>
+        </div>
+      </div>
+
+      <!-- Liabilities Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="dot red"></span>
+          Liabilities
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Loans</span>
+          <span class="stat-value">$<span id="loans">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Interest Due</span>
+          <span class="stat-value">$<span id="intPay">0</span></span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Net Worth</span>
+          <span class="stat-value highlight" id="netWorth">$0</span>
+        </div>
+      </div>
+
+      <!-- Market Panel -->
+      <div class="panel market">
+        <div class="panel-header">
+          <span class="dot gold"></span>
+          Market
+        </div>
+        <div class="price-display">
+          <div class="price-label">Current Price</div>
+          <div class="price-current">$<span id="spot">4</span>/lb</div>
+        </div>
+        <div class="price-next">
+          <div class="price-label">Next Year</div>
+          <div class="price-next-value">$<span id="fwd">4.6</span>/lb</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Box -->
+    <div class="message-box" id="messageBox">
+      <div class="message-label">Messages</div>
+      <div class="message-content" id="messageContent">
+        <span class="message-title" id="messageTitle">Nothing to report.</span>
+        <div class="message-detail" id="messageDetail"></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-section">
+      <div class="actions-title">Actions for Year <span id="actYear">1</span></div>
+      <div class="action-grid">
+        <!-- Copper Action -->
+        <div class="action-box">
+          <div class="action-box-header">
+            <span class="action-box-title copper">Copper</span>
+            <div class="toggle-group">
+              <label><input type="radio" name="copperAction" value="buy" checked><span>Buy</span></label>
+              <label><input type="radio" name="copperAction" value="sell"><span>Sell</span></label>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Amount</label>
+            <input id="copperAmount" type="number" min="0" step="1" value="0" placeholder="0">
+            <span style="color: var(--gray-600); font-size: 13px;">lb</span>
+          </div>
+          <div class="amount-preview" id="amountPrice">= $0.00</div>
+        </div>
+
+        <!-- Loan Action -->
+        <div class="action-box">
+          <div class="action-box-header">
+            <span class="action-box-title loans">Loans</span>
+            <div class="toggle-group">
+              <label><input type="radio" name="loanAction" value="borrow" checked><span>Borrow</span></label>
+              <label><input type="radio" name="loanAction" value="repay"><span>Repay</span></label>
+            </div>
+          </div>
+          <div class="input-row">
+            <label>Amount</label>
+            <input id="loanAmount" type="number" min="0" step="1" value="0" placeholder="0">
+            <span style="color: var(--gray-600); font-size: 13px;">$</span>
+          </div>
+          <div class="amount-preview">Credit limit: $<span id="creditLimit">1000.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="button-row">
+      <button class="btn btn-secondary" id="restart">Restart</button>
+      <button class="btn btn-primary" id="next" style="flex: 1;">Next Year</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span>Interest: 10%/year | Credit: $200 + Net Worth</span>
+      <a href="index.html">Rules</a>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="gameover" class="gameover-card hidden">
+    <div class="gameover-title" id="gameoverTitle">Game Complete</div>
+    <div id="gameoverMsg"></div>
+    <div class="score-display">
+      <div class="score-value" id="finalScore">$0.00</div>
+      <div class="score-label">Final Net Worth</div>
+    </div>
+    <div class="par-info" id="parInfo"></div>
+    <div class="par-info" id="timeInfo"></div>
+    <div class="performance-badge" id="performanceBadge"></div>
+    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 20px;">
+      <button class="btn btn-secondary" id="restart2">Play Again</button>
+      <button class="btn btn-primary" id="submitScore">Submit to Leaderboard</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboardModal" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Submit Your Score</h3>
+      <p style="text-align: center; margin-bottom: 16px; color: var(--gray-600);">
+        Score: <b id="modalScore">$0</b> | Time: <b id="modalTime">00:00</b>
+      </p>
+      <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+      <div class="modal-buttons">
+        <button class="btn-ghost" id="cancelSubmit">Cancel</button>
+        <button class="btn btn-primary" id="confirmSubmit">Submit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/game.js"></script>
+
+</body>
+</html>

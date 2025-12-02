@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copper Trader - Leaderboard</title>
+  <meta name="description" content="View the top Copper Trader scores and rankings">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="container container--leaderboard">
+  <div class="header">
+    <h1>Leaderboard</h1>
+    <div class="subtitle">Copper Trader Rankings</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Top Traders</h2>
+    </div>
+
+    <div id="leaderboardContent">
+      <!-- Populated by JavaScript -->
+    </div>
+
+    <div class="button-row button-row--centered">
+      <a href="game.html" class="btn btn-primary">Play Game</a>
+      <button class="btn btn-secondary" id="clearLeaderboard">Clear Leaderboard</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Ranked by P&L Score (highest first). Time is tiebreaker for equal scores.
+  </div>
+</div>
+
+<script src="js/leaderboard.js"></script>
+
+</body>
+</html>
