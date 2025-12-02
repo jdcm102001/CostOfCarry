@@ -283,7 +283,8 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (loanAction === 'borrow' && loanAmt > 0) {
         const lim = Math.max(0, credit() - S.loans);
-        if (loanAmt > lim) {
+        // Use tolerance for floating point comparison
+        if (loanAmt > lim + 0.001) {
           showError('Borrow exceeds credit limit.');
           return;
         }
