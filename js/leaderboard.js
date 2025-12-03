@@ -1,15 +1,56 @@
 /**
  * Copper Trader - Leaderboard Logic
- * Displays and manages the high scores leaderboard
+ * Displays and manages the high scores leaderboard (Firebase)
  */
 
+console.log('=== leaderboard.js file loaded ===');
+
 (function() {
+  console.log('=== Leaderboard IIFE starting ===');
+
+  // ===== Firebase =====
+  let db = null;
+  try {
+    console.log('Leaderboard: Firebase typeof:', typeof firebase);
+    if (typeof firebase !== 'undefined') {
+      db = firebase.firestore();
+      console.log('Leaderboard: Firebase initialized successfully');
+      console.log('Leaderboard: Firestore db:', typeof db);
+    } else {
+      console.error('Leaderboard: Firebase SDK not loaded!');
+    }
+  } catch (e) {
+    console.error('Leaderboard: Firebase initialization error:', e);
+  }
+
   /**
-   * Retrieve leaderboard from localStorage
+   * Retrieve leaderboard from Firebase
    */
-  function getLeaderboard() {
-    const data = localStorage.getItem('copperTraderLeaderboard');
-    return data ? JSON.parse(data) : [];
+  async function getLeaderboard() {
+    console.log('=== getLeaderboard called ===');
+
+    if (!db) {
+      console.error('ERROR: Firebase db is not initialized!');
+      return [];
+    }
+
+    try {
+      const snapshot = await db.collection('leaderboard')
+        .orderBy('score', 'desc')
+        .orderBy('time', 'asc')
+        .limit(10)
+        .get();
+
+      console.log('Snapshot size:', snapshot.size);
+      console.log('Documents:', snapshot.docs.map(doc => doc.data()));
+
+      return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+      console.error('FIREBASE ERROR in getLeaderboard:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      return [];
+    }
   }
 
   /**
@@ -44,9 +85,25 @@
   /**
    * Render the leaderboard table
    */
-  function renderLeaderboard() {
-    const leaderboard = getLeaderboard();
+  async function renderLeaderboard() {
     const container = document.getElementById('leaderboardContent');
+
+    // Check if Firebase is initialized
+    if (!db) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <p>Unable to connect to leaderboard. Please check your internet connection and refresh the page.</p>
+          <a href="game.html" class="btn btn-primary">Play Game</a>
+        </div>
+      `;
+      return;
+    }
+
+    // Show loading state
+    container.innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
+
+    const leaderboard = await getLeaderboard();
 
     if (leaderboard.length === 0) {
       container.innerHTML = `
@@ -97,19 +154,6 @@
     html += '</tbody></table>';
     container.innerHTML = html;
   }
-
-  /**
-   * Clear the entire leaderboard
-   */
-  function clearLeaderboard() {
-    if (confirm('Are you sure you want to clear the entire leaderboard? This cannot be undone.')) {
-      localStorage.removeItem('copperTraderLeaderboard');
-      renderLeaderboard();
-    }
-  }
-
-  // Event listeners
-  document.getElementById('clearLeaderboard').addEventListener('click', clearLeaderboard);
 
   // Initialize
   renderLeaderboard();

@@ -3,11 +3,30 @@
  * A 10-year copper trading simulation game
  */
 
+console.log('=== game.js file loaded ===');
+
 window.onerror = function(message, source, lineno, colno, error) {
-  showError('JavaScript error: ' + message + ' @ ' + lineno + ':' + colno);
+  console.error('WINDOW ERROR:', message, '@', lineno + ':' + colno);
 };
 
 (function() {
+  console.log('=== IIFE starting ===');
+
+  // ===== Firebase =====
+  let db = null;
+  try {
+    console.log('Firebase typeof:', typeof firebase);
+    if (typeof firebase !== 'undefined') {
+      db = firebase.firestore();
+      console.log('Firebase initialized successfully');
+      console.log('Firestore db:', typeof db);
+    } else {
+      console.error('Firebase SDK not loaded!');
+    }
+  } catch (e) {
+    console.error('Firebase initialization error:', e);
+  }
+
   // ===== Constants =====
   const YEARS = 10;
   const INTEREST = 10;
@@ -410,11 +429,14 @@ window.onerror = function(message, source, lineno, colno, error) {
   let finalParPercent = 0;
 
   function finishGame() {
+    console.log('=== finishGame called ===');
     stopTimer();
     if (!PAR) PAR = simulatePar();
     const lastNext = MARKET[YEARS - 1].next;
     const score = (S.cash + S.lbs * lastNext) - S.loans;
     finalScore = score;
+    console.log('PAR score:', PAR.score);
+    console.log('Player score:', score);
 
     showGameover('Game Complete!', true);
     document.getElementById('finalScore').textContent = '$' + fmt(score);
@@ -423,8 +445,10 @@ window.onerror = function(message, source, lineno, colno, error) {
     finalParPercent = 0;
     if (PAR.score > 0) {
       finalParPercent = Math.round((score / PAR.score) * 100);
+      console.log('Calculated pct:', finalParPercent);
       document.getElementById('parInfo').textContent = `You achieved ${finalParPercent}% of par`;
     }
+    console.log('finalParPercent set to:', finalParPercent);
 
     const badge = document.getElementById('performanceBadge');
     if (finalParPercent >= 100) {
@@ -464,28 +488,50 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('performanceBadge').textContent = 'Game Over';
   }
 
-  // ===== Leaderboard =====
-  function getLeaderboard() {
-    const data = localStorage.getItem('copperTraderLeaderboard');
-    return data ? JSON.parse(data) : [];
-  }
+  // ===== Leaderboard (Firebase) =====
+  async function addToLeaderboard(name, score, time, parPercent) {
+    console.log('=== addToLeaderboard called ===');
+    console.log('Parameters:', { name, score, time, parPercent });
 
-  function saveLeaderboard(leaderboard) {
-    localStorage.setItem('copperTraderLeaderboard', JSON.stringify(leaderboard));
-  }
+    if (!db) {
+      console.error('ERROR: Firebase db is not initialized!');
+      alert('Error: Could not connect to leaderboard. Please refresh the page.');
+      return;
+    }
 
-  function addToLeaderboard(name, score, time, parPercent) {
-    const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, time, parPercent, date: new Date().toISOString() });
-    // Sort by score (desc), then by time (asc) for tiebreaker
-    leaderboard.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.time - b.time;
-    });
-    // Keep top 50
-    if (leaderboard.length > 50) leaderboard.length = 50;
-    saveLeaderboard(leaderboard);
-    return leaderboard;
+    try {
+      console.log('Attempting to add to Firestore...');
+      const docRef = await db.collection('leaderboard').add({
+        name: name,
+        score: score,
+        time: time,
+        parPercent: parPercent,
+        date: new Date().toISOString()
+      });
+      console.log('SUCCESS! Document written with ID:', docRef.id);
+
+      // Get all entries sorted by score desc, time asc
+      console.log('Fetching all entries for cleanup...');
+      const snapshot = await db.collection('leaderboard')
+        .orderBy('score', 'desc')
+        .orderBy('time', 'asc')
+        .get();
+      console.log('Total entries in leaderboard:', snapshot.size);
+
+      // Delete entries beyond top 10
+      const docs = snapshot.docs;
+      if (docs.length > 10) {
+        console.log('Deleting entries beyond top 10...');
+        const batch = db.batch();
+        docs.slice(10).forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        console.log('Cleanup complete');
+      }
+    } catch (error) {
+      console.error('FIREBASE ERROR:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+    }
   }
 
   function showLeaderboardModal() {
@@ -500,13 +546,24 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('leaderboardModal').classList.add('hidden');
   }
 
-  function submitScore() {
+  async function submitScore() {
+    console.log('=== submitScore called ===');
     const name = document.getElementById('playerName').value.trim();
+    console.log('Player name:', name);
+    console.log('Final score:', finalScore);
+    console.log('Final time:', finalTime);
+    console.log('Final par percent:', typeof finalParPercent !== 'undefined' ? finalParPercent : 'UNDEFINED!');
+
     if (!name) {
+      console.log('No name entered, aborting');
       document.getElementById('playerName').style.borderColor = 'var(--red)';
       return;
     }
-    addToLeaderboard(name, finalScore, finalTime, finalParPercent);
+
+    console.log('Calling addToLeaderboard...');
+    await addToLeaderboard(name, finalScore, finalTime, finalParPercent);
+    console.log('addToLeaderboard completed');
+
     hideLeaderboardModal();
     // Redirect to leaderboard page
     window.location.href = 'leaderboard.html';
