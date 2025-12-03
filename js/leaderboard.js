@@ -65,7 +65,8 @@
           <tr>
             <th>Rank</th>
             <th>Name</th>
-            <th>P&L Score</th>
+            <th>% of Par</th>
+            <th>Net Worth</th>
             <th>Time</th>
           </tr>
         </thead>
@@ -76,13 +77,17 @@
       const rank = index + 1;
       const rankClass = rank <= 3 ? `rank-${rank}` : '';
       const scoreClass = entry.score >= 0 ? 'positive' : 'negative';
-      const scorePrefix = entry.score >= 0 ? '+$' : '-$';
+      const scorePrefix = entry.score >= 0 ? '$' : '-$';
       const scoreValue = Math.abs(entry.score);
+
+      // Handle backwards compatibility for entries without parPercent
+      const parPercent = entry.parPercent !== undefined ? `${entry.parPercent}%` : '—';
 
       html += `
         <tr class="${rankClass}">
           <td>${rank}</td>
           <td>${escapeHtml(entry.name)}</td>
+          <td>${parPercent}</td>
           <td class="${scoreClass}">${scorePrefix}${fmt(scoreValue)}</td>
           <td>${formatTime(entry.time)}</td>
         </tr>
