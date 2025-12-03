@@ -1,15 +1,28 @@
 /**
  * Copper Trader - Leaderboard Logic
- * Displays and manages the high scores leaderboard
+ * Displays and manages the high scores leaderboard (Firebase)
  */
 
 (function() {
+  // ===== Firebase =====
+  const db = firebase.firestore();
+
   /**
-   * Retrieve leaderboard from localStorage
+   * Retrieve leaderboard from Firebase
    */
-  function getLeaderboard() {
-    const data = localStorage.getItem('copperTraderLeaderboard');
-    return data ? JSON.parse(data) : [];
+  async function getLeaderboard() {
+    try {
+      const snapshot = await db.collection('leaderboard')
+        .orderBy('score', 'desc')
+        .orderBy('time', 'asc')
+        .limit(10)
+        .get();
+
+      return snapshot.docs.map(doc => doc.data());
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      return [];
+    }
   }
 
   /**
@@ -44,9 +57,13 @@
   /**
    * Render the leaderboard table
    */
-  function renderLeaderboard() {
-    const leaderboard = getLeaderboard();
+  async function renderLeaderboard() {
     const container = document.getElementById('leaderboardContent');
+
+    // Show loading state
+    container.innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
+
+    const leaderboard = await getLeaderboard();
 
     if (leaderboard.length === 0) {
       container.innerHTML = `
@@ -97,19 +114,6 @@
     html += '</tbody></table>';
     container.innerHTML = html;
   }
-
-  /**
-   * Clear the entire leaderboard
-   */
-  function clearLeaderboard() {
-    if (confirm('Are you sure you want to clear the entire leaderboard? This cannot be undone.')) {
-      localStorage.removeItem('copperTraderLeaderboard');
-      renderLeaderboard();
-    }
-  }
-
-  // Event listeners
-  document.getElementById('clearLeaderboard').addEventListener('click', clearLeaderboard);
 
   // Initialize
   renderLeaderboard();

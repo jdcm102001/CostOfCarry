@@ -8,6 +8,9 @@ window.onerror = function(message, source, lineno, colno, error) {
 };
 
 (function() {
+  // ===== Firebase =====
+  const db = firebase.firestore();
+
   // ===== Constants =====
   const YEARS = 10;
   const INTEREST = 10;
@@ -464,28 +467,34 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('performanceBadge').textContent = 'Game Over';
   }
 
-  // ===== Leaderboard =====
-  function getLeaderboard() {
-    const data = localStorage.getItem('copperTraderLeaderboard');
-    return data ? JSON.parse(data) : [];
-  }
+  // ===== Leaderboard (Firebase) =====
+  async function addToLeaderboard(name, score, time, parPercent) {
+    try {
+      // Add the new entry
+      await db.collection('leaderboard').add({
+        name: name,
+        score: score,
+        time: time,
+        parPercent: parPercent,
+        date: new Date().toISOString()
+      });
 
-  function saveLeaderboard(leaderboard) {
-    localStorage.setItem('copperTraderLeaderboard', JSON.stringify(leaderboard));
-  }
+      // Get all entries sorted by score desc, time asc
+      const snapshot = await db.collection('leaderboard')
+        .orderBy('score', 'desc')
+        .orderBy('time', 'asc')
+        .get();
 
-  function addToLeaderboard(name, score, time, parPercent) {
-    const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, time, parPercent, date: new Date().toISOString() });
-    // Sort by score (desc), then by time (asc) for tiebreaker
-    leaderboard.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.time - b.time;
-    });
-    // Keep top 50
-    if (leaderboard.length > 50) leaderboard.length = 50;
-    saveLeaderboard(leaderboard);
-    return leaderboard;
+      // Delete entries beyond top 10
+      const docs = snapshot.docs;
+      if (docs.length > 10) {
+        const batch = db.batch();
+        docs.slice(10).forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+      }
+    } catch (error) {
+      console.error('Error adding to leaderboard:', error);
+    }
   }
 
   function showLeaderboardModal() {
@@ -500,13 +509,13 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('leaderboardModal').classList.add('hidden');
   }
 
-  function submitScore() {
+  async function submitScore() {
     const name = document.getElementById('playerName').value.trim();
     if (!name) {
       document.getElementById('playerName').style.borderColor = 'var(--red)';
       return;
     }
-    addToLeaderboard(name, finalScore, finalTime, finalParPercent);
+    await addToLeaderboard(name, finalScore, finalTime, finalParPercent);
     hideLeaderboardModal();
     // Redirect to leaderboard page
     window.location.href = 'leaderboard.html';

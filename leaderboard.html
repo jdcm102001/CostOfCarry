@@ -26,15 +26,26 @@
 
     <div class="button-row button-row--centered">
       <a href="game.html" class="btn btn-primary">Play Game</a>
-      <button class="btn btn-secondary" id="clearLeaderboard">Clear Leaderboard</button>
     </div>
   </div>
 
   <div class="footer-note">
-    Ranked by P&L Score (highest first). Time is tiebreaker for equal scores.
+    Ranked by Net Worth (highest first). Time is tiebreaker for equal scores.
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyByQSykK7wIWFAw4eWHNRvdw-7NfPDGX5w",
+    authDomain: "cost-of-carry-v2.firebaseapp.com",
+    projectId: "cost-of-carry-v2",
+    storageBucket: "cost-of-carry-v2.firebasestorage.app",
+    messagingSenderId: "1097657313494",
+    appId: "1:1097657313494:web:a5993c42400bca33bd0177"
+  });
+</script>
 <script src="js/leaderboard.js"></script>
 
 </body>
