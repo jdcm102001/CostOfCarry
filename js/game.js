@@ -443,31 +443,28 @@
       badge.textContent = 'Room to Improve';
       badge.className = 'performance-badge poor';
     }
+
+    // Show submit button for successful game completion
+    document.getElementById('submitScore').style.display = 'inline-block';
   }
 
   function gameOver(msg, isWin, detail) {
     stopTimer();
-    if (!PAR) PAR = simulatePar();
     showGameover('Game Over', false);
+
     let fullMsg = msg;
     if (detail) fullMsg += ' - ' + detail;
     document.getElementById('gameoverMsg').textContent = fullMsg;
 
-    const lastNext = MARKET[Math.min(S.year, YEARS) - 1].next;
-    const score = (S.cash + S.lbs * lastNext) - S.loans;
-    finalScore = Math.round(score * 100) / 100; // Round to 2 decimal places
-    document.getElementById('finalScore').textContent = '$' + fmt(finalScore);
-    document.getElementById('timeInfo').textContent = `Time: ${formatTime(finalTime)}`;
-
-    finalParPercent = 0;
-    if (PAR.score > 0) {
-      finalParPercent = Math.round((finalScore / PAR.score) * 100);
-      document.getElementById('parInfo').textContent = `You achieved ${finalParPercent}% of par`;
-    } else {
-      document.getElementById('parInfo').textContent = '';
-    }
+    // For failed games: don't show score/par, hide submit button
+    document.getElementById('finalScore').textContent = 'N/A';
+    document.getElementById('parInfo').textContent = '';
+    document.getElementById('timeInfo').textContent = '';
     document.getElementById('performanceBadge').className = 'performance-badge poor';
     document.getElementById('performanceBadge').textContent = 'Game Over';
+
+    // Hide the submit button on failure - players cannot submit failed games
+    document.getElementById('submitScore').style.display = 'none';
   }
 
   // ===== Leaderboard (Firebase) =====
@@ -562,6 +559,10 @@
     document.querySelector('input[name="loanAction"][value="borrow"]').checked = true;
     document.getElementById('timer').textContent = '00:00';
     PAR = null;
+
+    // Reset submit button visibility for new games
+    document.getElementById('submitScore').style.display = 'inline-block';
+
     startTimer();
     render();
   }
