@@ -3,34 +3,22 @@
  * Displays and manages the high scores leaderboard (Firebase)
  */
 
-console.log('=== leaderboard.js file loaded ===');
-
 (function() {
-  console.log('=== Leaderboard IIFE starting ===');
-
   // ===== Firebase =====
   let db = null;
   try {
-    console.log('Leaderboard: Firebase typeof:', typeof firebase);
     if (typeof firebase !== 'undefined') {
       db = firebase.firestore();
-      console.log('Leaderboard: Firebase initialized successfully');
-      console.log('Leaderboard: Firestore db:', typeof db);
-    } else {
-      console.error('Leaderboard: Firebase SDK not loaded!');
     }
   } catch (e) {
-    console.error('Leaderboard: Firebase initialization error:', e);
+    // Firebase initialization failed
   }
 
   /**
    * Retrieve leaderboard from Firebase
    */
   async function getLeaderboard() {
-    console.log('=== getLeaderboard called ===');
-
     if (!db) {
-      console.error('ERROR: Firebase db is not initialized!');
       return [];
     }
 
@@ -41,14 +29,8 @@ console.log('=== leaderboard.js file loaded ===');
         .limit(10)
         .get();
 
-      console.log('Snapshot size:', snapshot.size);
-      console.log('Documents:', snapshot.docs.map(doc => doc.data()));
-
       return snapshot.docs.map(doc => doc.data());
     } catch (error) {
-      console.error('FIREBASE ERROR in getLeaderboard:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
       return [];
     }
   }
