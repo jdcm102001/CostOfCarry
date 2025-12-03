@@ -3,15 +3,29 @@
  * A 10-year copper trading simulation game
  */
 
+console.log('=== game.js file loaded ===');
+
 window.onerror = function(message, source, lineno, colno, error) {
-  showError('JavaScript error: ' + message + ' @ ' + lineno + ':' + colno);
+  console.error('WINDOW ERROR:', message, '@', lineno + ':' + colno);
 };
 
 (function() {
+  console.log('=== IIFE starting ===');
+
   // ===== Firebase =====
-  const db = firebase.firestore();
-  console.log('Firebase initialized:', typeof firebase !== 'undefined');
-  console.log('Firestore db:', typeof db !== 'undefined');
+  let db = null;
+  try {
+    console.log('Firebase typeof:', typeof firebase);
+    if (typeof firebase !== 'undefined') {
+      db = firebase.firestore();
+      console.log('Firebase initialized successfully');
+      console.log('Firestore db:', typeof db);
+    } else {
+      console.error('Firebase SDK not loaded!');
+    }
+  } catch (e) {
+    console.error('Firebase initialization error:', e);
+  }
 
   // ===== Constants =====
   const YEARS = 10;
@@ -478,6 +492,12 @@ window.onerror = function(message, source, lineno, colno, error) {
   async function addToLeaderboard(name, score, time, parPercent) {
     console.log('=== addToLeaderboard called ===');
     console.log('Parameters:', { name, score, time, parPercent });
+
+    if (!db) {
+      console.error('ERROR: Firebase db is not initialized!');
+      alert('Error: Could not connect to leaderboard. Please refresh the page.');
+      return;
+    }
 
     try {
       console.log('Attempting to add to Firestore...');

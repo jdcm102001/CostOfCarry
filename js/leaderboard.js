@@ -3,17 +3,37 @@
  * Displays and manages the high scores leaderboard (Firebase)
  */
 
+console.log('=== leaderboard.js file loaded ===');
+
 (function() {
+  console.log('=== Leaderboard IIFE starting ===');
+
   // ===== Firebase =====
-  const db = firebase.firestore();
-  console.log('Leaderboard: Firebase initialized:', typeof firebase !== 'undefined');
-  console.log('Leaderboard: Firestore db:', typeof db !== 'undefined');
+  let db = null;
+  try {
+    console.log('Leaderboard: Firebase typeof:', typeof firebase);
+    if (typeof firebase !== 'undefined') {
+      db = firebase.firestore();
+      console.log('Leaderboard: Firebase initialized successfully');
+      console.log('Leaderboard: Firestore db:', typeof db);
+    } else {
+      console.error('Leaderboard: Firebase SDK not loaded!');
+    }
+  } catch (e) {
+    console.error('Leaderboard: Firebase initialization error:', e);
+  }
 
   /**
    * Retrieve leaderboard from Firebase
    */
   async function getLeaderboard() {
     console.log('=== getLeaderboard called ===');
+
+    if (!db) {
+      console.error('ERROR: Firebase db is not initialized!');
+      return [];
+    }
+
     try {
       const snapshot = await db.collection('leaderboard')
         .orderBy('score', 'desc')
@@ -67,6 +87,18 @@
    */
   async function renderLeaderboard() {
     const container = document.getElementById('leaderboardContent');
+
+    // Check if Firebase is initialized
+    if (!db) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <p>Unable to connect to leaderboard. Please check your internet connection and refresh the page.</p>
+          <a href="game.html" class="btn btn-primary">Play Game</a>
+        </div>
+      `;
+      return;
+    }
 
     // Show loading state
     container.innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
