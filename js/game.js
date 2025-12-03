@@ -283,7 +283,10 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (loanAction === 'borrow' && loanAmt > 0) {
         const lim = Math.max(0, credit() - S.loans);
-        if (loanAmt > lim) {
+        // Round both to 2 decimal places to avoid floating point issues
+        const roundedLoanAmt = Math.round(loanAmt * 100) / 100;
+        const roundedLim = Math.round(lim * 100) / 100;
+        if (roundedLoanAmt > roundedLim) {
           showError('Borrow exceeds credit limit.');
           return;
         }
@@ -302,7 +305,10 @@ window.onerror = function(message, source, lineno, colno, error) {
 
       if (copperAction === 'buy' && copperAmt > 0) {
         const cost = copperAmt * S.spot;
-        if (cost > S.cash) {
+        // Round to 2 decimals for comparison to handle floating point issues
+        const roundedCost = Math.round(cost * 100) / 100;
+        const roundedCash = Math.round(S.cash * 100) / 100;
+        if (roundedCost > roundedCash) {
           showError('Not enough cash to buy that many lbs.');
           return;
         }
@@ -401,6 +407,7 @@ window.onerror = function(message, source, lineno, colno, error) {
   }
 
   let finalScore = 0;
+  let finalParPercent = 0;
 
   function finishGame() {
     stopTimer();
@@ -413,17 +420,17 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('finalScore').textContent = '$' + fmt(score);
     document.getElementById('timeInfo').textContent = `Time: ${formatTime(finalTime)}`;
 
-    let pct = 0;
+    finalParPercent = 0;
     if (PAR.score > 0) {
-      pct = Math.round((score / PAR.score) * 100);
-      document.getElementById('parInfo').textContent = `Par: $${fmt(PAR.score)} - You achieved ${pct}%`;
+      finalParPercent = Math.round((score / PAR.score) * 100);
+      document.getElementById('parInfo').textContent = `You achieved ${finalParPercent}% of par`;
     }
 
     const badge = document.getElementById('performanceBadge');
-    if (pct >= 100) {
+    if (finalParPercent >= 100) {
       badge.textContent = 'Excellent!';
       badge.className = 'performance-badge excellent';
-    } else if (pct >= 80) {
+    } else if (finalParPercent >= 80) {
       badge.textContent = 'Good';
       badge.className = 'performance-badge good';
     } else {
@@ -446,7 +453,13 @@ window.onerror = function(message, source, lineno, colno, error) {
     document.getElementById('finalScore').textContent = '$' + fmt(score);
     document.getElementById('timeInfo').textContent = `Time: ${formatTime(finalTime)}`;
 
-    document.getElementById('parInfo').textContent = `Par: $${fmt(PAR.score)}`;
+    finalParPercent = 0;
+    if (PAR.score > 0) {
+      finalParPercent = Math.round((score / PAR.score) * 100);
+      document.getElementById('parInfo').textContent = `You achieved ${finalParPercent}% of par`;
+    } else {
+      document.getElementById('parInfo').textContent = '';
+    }
     document.getElementById('performanceBadge').className = 'performance-badge poor';
     document.getElementById('performanceBadge').textContent = 'Game Over';
   }
@@ -461,9 +474,9 @@ window.onerror = function(message, source, lineno, colno, error) {
     localStorage.setItem('copperTraderLeaderboard', JSON.stringify(leaderboard));
   }
 
-  function addToLeaderboard(name, score, time) {
+  function addToLeaderboard(name, score, time, parPercent) {
     const leaderboard = getLeaderboard();
-    leaderboard.push({ name, score, time, date: new Date().toISOString() });
+    leaderboard.push({ name, score, time, parPercent, date: new Date().toISOString() });
     // Sort by score (desc), then by time (asc) for tiebreaker
     leaderboard.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
@@ -493,7 +506,7 @@ window.onerror = function(message, source, lineno, colno, error) {
       document.getElementById('playerName').style.borderColor = 'var(--red)';
       return;
     }
-    addToLeaderboard(name, finalScore, finalTime);
+    addToLeaderboard(name, finalScore, finalTime, finalParPercent);
     hideLeaderboardModal();
     // Redirect to leaderboard page
     window.location.href = 'leaderboard.html';

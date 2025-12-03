@@ -12,36 +12,118 @@
 <div class="container container--narrow">
   <div class="header">
     <h1>Copper Trader</h1>
-    <div class="subtitle">Instructions</div>
+    <div class="subtitle" id="subtitle">Instructions</div>
   </div>
 
   <div class="card card--padded instructions">
-    <h2>Object of the Game</h2>
-    <p>To make as much money as possible speculating in the copper market over 10 years.</p>
+    <!-- Language Toggle -->
+    <div class="lang-toggle-container">
+      <div class="lang-toggle">
+        <span class="lang-toggle-label active" id="langEN" onclick="setLanguage('en')">EN</span>
+        <div class="lang-toggle-switch" id="langSwitch" onclick="toggleLanguage()"></div>
+        <span class="lang-toggle-label" id="langES" onclick="setLanguage('es')">ES</span>
+      </div>
+    </div>
 
-    <h2>How to Play</h2>
-    <p>Each year you must choose whether to buy or sell copper (or neither), and whether to borrow money or repay existing loans (or neither). Use the controls at the bottom of the game to indicate what you want to do. When you're ready, click "Next Year" to see what happens. The game lasts for 10 turns, each one year long. You can restart whenever you want by clicking the "Restart" button.</p>
-    <p>The game will be most interesting if you try to imagine you're doing this for real. Don't just guess - think carefully about what to do at each turn.</p>
+    <!-- English Content -->
+    <div class="lang-content active" id="content-en">
+      <h2>Object of the Game</h2>
+      <p>To make as much money as possible speculating in the copper market over 10 years.</p>
 
-    <h2>What the Display Shows</h2>
-    <p>The game display has several areas. The left panel shows your assets: any cash you have on hand plus the value of any copper you own at the current price. The middle panel shows your liabilities: the value of any loans you've taken out, the amount of interest due on your loans at the end of this year, and your net worth (which is the difference between your assets and the liabilities you owe to other people).</p>
-    <p>The right panel shows market information: the current price of copper per pound, and the price of copper for delivery next year. In this game there are no random shocks, so the future price shown will be exactly equal to the true price of copper next year.</p>
+      <h2>How to Play</h2>
+      <p>Each year you must choose whether to buy or sell copper (or neither), and whether to borrow money or repay existing loans (or neither). Use the controls at the bottom of the game to indicate what you want to do. When you're ready, click "Next Year" to see what happens. The game lasts for 10 turns, each one year long. You can restart whenever you want by clicking the "Restart" button.</p>
+      <p>The game will be most interesting if you try to imagine you're doing this for real. Don't just guess - think carefully about what to do at each turn.</p>
 
-    <h2>Some Helpful Information</h2>
-    <p>Initially, you have no money and no copper. To buy copper, you'll have to borrow money. The interest rate on loans is 10% per year. The bank processes loans quickly, so you may borrow money AND buy copper in the same turn. In this simulation, the only way to grow your wealth is through copper trading - there are no other investment opportunities available.</p>
-    <p>You have a credit limit, however. The bank will not loan you more in total than $200 plus the net worth of your business. For example, if your net worth is $10 and you have already borrowed $150, the bank would allow you to borrow up to $60 more: $210 - $150. On the other hand, if you had paid off your loans earlier and had a net worth of $10, the bank would let you borrow the full $210.</p>
-    <p>When you borrow money, you must pay interest. Each year you will pay 10% interest on your outstanding loans at the beginning of the year. This is shown on the balance sheet as "Interest Due". One very important thing to remember: the bank doesn't accept copper - you must pay interest in cash. That means you must have enough cash on hand at the end of each turn to meet your interest payments (after any buying, selling, borrowing, and repaying activities). If you do not have enough cash, you will default on your loans and the game will be over.</p>
-    <p>Remember that interest payments are compulsory and come directly out of your cash balance automatically - you do not use "Repay" to pay them. "Repay" is used to repay the principal on your loans (it's the opposite of "Borrow"). For example, suppose you have $50 cash, $200 of loans, owe $20 of interest and select "Repay $40". Here's what will happen: $40 of cash will be used to pay off $40 of loans, bringing your loan balance to $160. However, you'll only have $10 of cash left to pay the $20 of interest - and you'll be in trouble with the bank.</p>
-    <p>During each turn your instructions will be processed in the following order: borrowing, selling, buying, and repaying. After that, interest payments will be deducted from your cash balance.</p>
+      <h2>What the Display Shows</h2>
+      <p>The game display has several areas. The left panel shows your assets: any cash you have on hand plus the value of any copper you own at the current price. The middle panel shows your liabilities: the value of any loans you've taken out, the amount of interest due on your loans at the end of this year, and your net worth (which is the difference between your assets and the liabilities you owe to other people).</p>
+      <p>The right panel shows market information: the current price of copper per pound, and the price of copper for delivery next year. In this game there are no random shocks, so the future price shown will be exactly equal to the true price of copper next year.</p>
 
-    <h2>End of Game</h2>
-    <p>The game ends at the beginning of year 11. Your score will be your net worth at that point. The game will also tell you how well you did relative to "par", a reference score. If you're achieving 90%-100% of par, you've understood the key concepts. If you are very careful, however, you can score above par.</p>
+      <h2>Some Helpful Information</h2>
+      <p>Initially, you have no money and no copper. To buy copper, you'll have to borrow money. The interest rate on loans is 10% per year. The bank processes loans quickly, so you may borrow money AND buy copper in the same turn. In this simulation, the only way to grow your wealth is through copper trading - there are no other investment opportunities available.</p>
+      <p>You have a credit limit, however. The bank will not loan you more in total than $200 plus the net worth of your business. For example, if your net worth is $10 and you have already borrowed $150, the bank would allow you to borrow up to $60 more: $210 - $150. On the other hand, if you had paid off your loans earlier and had a net worth of $10, the bank would let you borrow the full $210.</p>
+      <p>When you borrow money, you must pay interest. Each year you will pay 10% interest on your outstanding loans at the beginning of the year. This is shown on the balance sheet as "Interest Due". One very important thing to remember: the bank doesn't accept copper - you must pay interest in cash. That means you must have enough cash on hand at the end of each turn to meet your interest payments (after any buying, selling, borrowing, and repaying activities). If you do not have enough cash, you will default on your loans and the game will be over.</p>
+      <p>Remember that interest payments are compulsory and come directly out of your cash balance automatically - you do not use "Repay" to pay them. "Repay" is used to repay the principal on your loans (it's the opposite of "Borrow"). For example, suppose you have $50 cash, $200 of loans, owe $20 of interest and select "Repay $40". Here's what will happen: $40 of cash will be used to pay off $40 of loans, bringing your loan balance to $160. However, you'll only have $10 of cash left to pay the $20 of interest - and you'll be in trouble with the bank.</p>
+      <p>During each turn your instructions will be processed in the following order: borrowing, selling, buying, and repaying. After that, interest payments will be deducted from your cash balance.</p>
 
-    <div class="btn-container">
-      <a class="btn btn-primary" href="game.html">Start the Game</a>
+      <h2>End of Game</h2>
+      <p>The game ends at the beginning of year 11. Your score will be your net worth at that point. The game will also tell you how well you did relative to "par", a reference score. If you're achieving 90%-100% of par, you've understood the key concepts. If you are very careful, however, you can score above par.</p>
+
+      <div class="btn-container">
+        <a class="btn btn-primary" href="game.html">Start the Game</a>
+      </div>
+    </div>
+
+    <!-- Spanish Content -->
+    <div class="lang-content" id="content-es">
+      <h2>Objetivo del Juego</h2>
+      <p>Ganar la mayor cantidad de plata posible especulando en el mercado del cobre durante un periodo de 10 anos.</p>
+
+      <h2>Como se Juega</h2>
+      <p>Cada ano debes decidir si compras o vendes cobre (o si no haces nada), y si tomas un prestamo o amortizas parte de tu deuda (o tampoco haces nada). Usa los controles en la parte inferior del juego para indicar lo que quieres hacer. Cuando estes listo, haz clic en "Siguiente Ano" para ver que ocurre. El juego dura 10 rondas, cada una equivalente a un ano. Puedes reiniciar en cualquier momento presionando el boton "Reiniciar".</p>
+      <p>El juego es mucho mas entretenido si te imaginas que estuvieras operando de verdad. No juegues al azar: piensa bien cada decision antes de avanzar.</p>
+
+      <h2>Que Muestra la Pantalla</h2>
+      <p>La pantalla del juego esta dividida en varias secciones. El panel izquierdo muestra tus activos: el efectivo que tienes disponible y el valor del cobre que posees segun el precio actual. El panel central muestra tus pasivos: el valor de los prestamos que has tomado, los intereses que deberas pagar al cierre del ano, y tu patrimonio neto (la diferencia entre tus activos y las deudas que tienes con terceros).</p>
+      <p>El panel derecho muestra la informacion de mercado: el precio actual del cobre por libra y el precio del cobre para entrega el proximo ano. En esta simulacion no existen shocks aleatorios, por lo que el precio futuro mostrado sera exactamente el precio real del cobre el proximo ano.</p>
+
+      <h2>Informacion Util</h2>
+      <p>Partes sin plata y sin cobre. Para comprar cobre tendras que pedir un prestamo. La tasa de interes es de 10% anual. El banco procesa los prestamos de inmediato, asi que puedes pedir un prestamo y comprar cobre en la misma ronda. En esta simulacion, la unica forma de hacer crecer tu patrimonio es a traves del trading de cobre; no existen otras alternativas de inversion.</p>
+      <p>Sin embargo, tienes un limite de credito. El banco no te prestara mas que 200 dolares mas tu patrimonio neto. Por ejemplo, si tu patrimonio es de 10 dolares y ya tienes 150 dolares prestados, el banco solo te permitira pedir 60 dolares mas: 210 menos 150. En cambio, si hubieras pagado tus prestamos antes y tu patrimonio fuera de 10 dolares, podrias pedir el maximo de 210.</p>
+      <p>Cuando pides plata prestada, debes pagar intereses. Cada ano pagaras 10% de interes sobre el saldo que debias al inicio del ano. Esto aparece en el balance como "Intereses Adeudados". Es fundamental recordar que el banco no acepta cobre como pago: los intereses deben pagarse en efectivo. Eso significa que al final de cada turno debes tener suficiente caja para pagar los intereses despues de comprar, vender, pedir prestado y pagar deuda. Si no tienes el efectivo, caeras en default y el juego terminara.</p>
+      <p>Los intereses se cargan automaticamente y salen directo de tu saldo de caja; no se pagan usando la opcion "Pagar". Esa opcion sirve para amortizar el principal del prestamo (es lo inverso de "Pedir Prestamo"). Por ejemplo, si tienes 50 dolares en caja, 200 dolares de deuda, 20 dolares de interes por pagar y seleccionas "Pagar 40", ocurrira lo siguiente: se usaran 40 dolares de caja para reducir tu deuda a 160. Pero solo te quedaran 10 dolares en caja para pagar los 20 de interes, lo que te dejara en un problema con el banco.</p>
+      <p>Cada turno tus instrucciones se procesan en el siguiente orden: pedir prestamo, vender, comprar y pagar deuda. Luego se descuentan los intereses.</p>
+
+      <h2>Fin del Juego</h2>
+      <p>El juego termina al comenzar el ano 11. Tu puntaje sera tu patrimonio neto en ese momento. El juego tambien te mostrara que tan bien te fue en comparacion con un puntaje de referencia ("par"). Si logras entre el 90% y el 100% del par, significa que entendiste los conceptos clave. Si eres especialmente cuidadoso, incluso puedes superar ese nivel.</p>
+
+      <div class="btn-container">
+        <a class="btn btn-primary" href="game.html">Iniciar el Juego</a>
+      </div>
     </div>
   </div>
 </div>
+
+<script>
+(function() {
+  let currentLang = 'en';
+
+  window.setLanguage = function(lang) {
+    currentLang = lang;
+    updateUI();
+  };
+
+  window.toggleLanguage = function() {
+    currentLang = currentLang === 'en' ? 'es' : 'en';
+    updateUI();
+  };
+
+  function updateUI() {
+    // Update toggle switch
+    const toggle = document.getElementById('langSwitch');
+    const labelEN = document.getElementById('langEN');
+    const labelES = document.getElementById('langES');
+    const contentEN = document.getElementById('content-en');
+    const contentES = document.getElementById('content-es');
+    const subtitle = document.getElementById('subtitle');
+
+    if (currentLang === 'es') {
+      toggle.classList.add('es');
+      labelEN.classList.remove('active');
+      labelES.classList.add('active');
+      contentEN.classList.remove('active');
+      contentES.classList.add('active');
+      subtitle.textContent = 'Instrucciones';
+    } else {
+      toggle.classList.remove('es');
+      labelEN.classList.add('active');
+      labelES.classList.remove('active');
+      contentEN.classList.add('active');
+      contentES.classList.remove('active');
+      subtitle.textContent = 'Instructions';
+    }
+  }
+})();
+</script>
 
 </body>
 </html>
