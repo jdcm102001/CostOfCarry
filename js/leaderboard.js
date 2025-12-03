@@ -3,34 +3,75 @@
  * Displays and manages the high scores leaderboard (Firebase)
  */
 
+console.log('=== leaderboard.js file loaded ===');
+
 (function() {
+  console.log('=== Leaderboard IIFE starting ===');
+
   // ===== Firebase =====
+  // Check Firebase is available
+  if (typeof firebase === 'undefined') {
+    console.error('Firebase not loaded!');
+    return;
+  }
+
   let db = null;
   try {
-    if (typeof firebase !== 'undefined') {
-      db = firebase.firestore();
-    }
+    db = firebase.firestore();
+    console.log('Firestore db initialized:', db);
   } catch (e) {
-    // Firebase initialization failed
+    console.error('Firebase initialization error:', e);
   }
 
   /**
    * Retrieve leaderboard from Firebase
    */
   async function getLeaderboard() {
+    console.log('=== getLeaderboard called ===');
+    console.log('db value:', db);
+
     if (!db) {
+      console.error('ERROR: db is null/undefined');
       return [];
     }
 
     try {
+      // Try with ordering first (requires composite index)
+      console.log('Attempting query with ordering...');
       const snapshot = await db.collection('leaderboard')
         .orderBy('score', 'desc')
         .orderBy('time', 'asc')
         .limit(10)
         .get();
 
-      return snapshot.docs.map(doc => doc.data());
+      console.log('Snapshot received, size:', snapshot.size);
+      const data = snapshot.docs.map(doc => doc.data());
+      console.log('Mapped data:', data);
+      return data;
     } catch (error) {
+      console.error('ERROR in getLeaderboard:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+
+      // Fallback: try without ordering if index isn't ready
+      if (error.code === 'failed-precondition') {
+        console.log('Index not ready, trying fallback query without ordering...');
+        try {
+          const fallbackSnapshot = await db.collection('leaderboard').limit(10).get();
+          console.log('Fallback snapshot size:', fallbackSnapshot.size);
+          const data = fallbackSnapshot.docs.map(doc => doc.data());
+          // Sort in JavaScript instead
+          data.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.time - b.time;
+          });
+          console.log('Fallback data (sorted in JS):', data);
+          return data;
+        } catch (fallbackError) {
+          console.error('Fallback query also failed:', fallbackError);
+          return [];
+        }
+      }
       return [];
     }
   }
@@ -68,10 +109,13 @@
    * Render the leaderboard table
    */
   async function renderLeaderboard() {
+    console.log('=== renderLeaderboard starting ===');
     const container = document.getElementById('leaderboardContent');
+    console.log('Container element:', container);
 
     // Check if Firebase is initialized
     if (!db) {
+      console.error('db is not initialized in renderLeaderboard');
       container.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚠️</div>
@@ -86,8 +130,11 @@
     container.innerHTML = '<div class="empty-state"><p>Loading...</p></div>';
 
     const leaderboard = await getLeaderboard();
+    console.log('Leaderboard data received:', leaderboard);
+    console.log('Leaderboard length:', leaderboard.length);
 
     if (leaderboard.length === 0) {
+      console.log('No leaderboard entries, showing empty state');
       container.innerHTML = `
         <div class="empty-state">
           <div class="icon">📊</div>
@@ -98,6 +145,7 @@
       return;
     }
 
+    console.log('Rendering', leaderboard.length, 'entries');
     let html = `
       <table class="leaderboard-table">
         <thead>
@@ -135,8 +183,10 @@
 
     html += '</tbody></table>';
     container.innerHTML = html;
+    console.log('=== renderLeaderboard complete ===');
   }
 
   // Initialize
+  console.log('Calling renderLeaderboard()...');
   renderLeaderboard();
 })();
