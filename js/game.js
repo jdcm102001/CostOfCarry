@@ -486,17 +486,24 @@
         date: new Date().toISOString()
       });
 
-      // Get all entries sorted by score desc, time asc
-      const snapshot = await db.collection('leaderboard')
-        .orderBy('score', 'desc')
-        .orderBy('time', 'asc')
-        .get();
+      // Get all entries for cleanup
+      const snapshot = await db.collection('leaderboard').get();
+
+      // Sort in JavaScript to ensure correct order:
+      // Higher score first, then lower time first (for tiebreaker)
+      const sortedDocs = snapshot.docs.sort((a, b) => {
+        const aData = a.data();
+        const bData = b.data();
+        // Primary: higher score is better (descending)
+        if (bData.score !== aData.score) return bData.score - aData.score;
+        // Secondary: lower time is better (ascending)
+        return aData.time - bData.time;
+      });
 
       // Delete entries beyond top 10
-      const docs = snapshot.docs;
-      if (docs.length > 10) {
+      if (sortedDocs.length > 10) {
         const batch = db.batch();
-        docs.slice(10).forEach(doc => batch.delete(doc.ref));
+        sortedDocs.slice(10).forEach(doc => batch.delete(doc.ref));
         await batch.commit();
       }
     } catch (error) {

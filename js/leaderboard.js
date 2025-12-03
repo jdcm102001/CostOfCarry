@@ -24,8 +24,17 @@ console.log('=== leaderboard.js file loaded ===');
   }
 
   /**
-   * Retrieve leaderboard from Firebase
+   * Sort leaderboard entries: higher score first, then lower time first
    */
+  function sortLeaderboard(data) {
+    return data.sort((a, b) => {
+      // Primary: higher score is better (descending)
+      if (b.score !== a.score) return b.score - a.score;
+      // Secondary: lower time is better (ascending)
+      return a.time - b.time;
+    });
+  }
+
   async function getLeaderboard() {
     console.log('=== getLeaderboard called ===');
     console.log('db value:', db);
@@ -46,8 +55,12 @@ console.log('=== leaderboard.js file loaded ===');
 
       console.log('Snapshot received, size:', snapshot.size);
       const data = snapshot.docs.map(doc => doc.data());
-      console.log('Mapped data:', data);
-      return data;
+      console.log('Raw data from Firebase:', data);
+
+      // Always sort in JS to ensure correct order (in case index is misconfigured)
+      const sorted = sortLeaderboard(data);
+      console.log('Sorted data:', sorted);
+      return sorted;
     } catch (error) {
       console.error('ERROR in getLeaderboard:', error);
       console.error('Error code:', error.code);
@@ -60,13 +73,9 @@ console.log('=== leaderboard.js file loaded ===');
           const fallbackSnapshot = await db.collection('leaderboard').limit(10).get();
           console.log('Fallback snapshot size:', fallbackSnapshot.size);
           const data = fallbackSnapshot.docs.map(doc => doc.data());
-          // Sort in JavaScript instead
-          data.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return a.time - b.time;
-          });
-          console.log('Fallback data (sorted in JS):', data);
-          return data;
+          const sorted = sortLeaderboard(data);
+          console.log('Fallback data (sorted in JS):', sorted);
+          return sorted;
         } catch (fallbackError) {
           console.error('Fallback query also failed:', fallbackError);
           return [];
