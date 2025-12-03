@@ -6,11 +6,14 @@
 (function() {
   // ===== Firebase =====
   const db = firebase.firestore();
+  console.log('Leaderboard: Firebase initialized:', typeof firebase !== 'undefined');
+  console.log('Leaderboard: Firestore db:', typeof db !== 'undefined');
 
   /**
    * Retrieve leaderboard from Firebase
    */
   async function getLeaderboard() {
+    console.log('=== getLeaderboard called ===');
     try {
       const snapshot = await db.collection('leaderboard')
         .orderBy('score', 'desc')
@@ -18,9 +21,14 @@
         .limit(10)
         .get();
 
+      console.log('Snapshot size:', snapshot.size);
+      console.log('Documents:', snapshot.docs.map(doc => doc.data()));
+
       return snapshot.docs.map(doc => doc.data());
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
+      console.error('FIREBASE ERROR in getLeaderboard:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
       return [];
     }
   }
