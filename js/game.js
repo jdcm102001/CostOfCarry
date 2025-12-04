@@ -94,10 +94,31 @@
   const toInt = n => Math.max(0, Math.floor(Number(n) || 0));
   const toNum = n => Math.max(0, Number(n) || 0);
   const roundMoney = n => Math.round(n * 100) / 100;
-  const intv = x => roundMoney(x * INTEREST / 100);
-  const nwStart = () => roundMoney((S.cash + S.lbs * S.spot) - (S.loans + intv(S.loans_beg)));
+
+  const intv = x => {
+    const result = roundMoney(x * INTEREST / 100);
+    console.log('intv(' + x + ') =', result);
+    return result;
+  };
+
+  const nwStart = () => {
+    const copperValue = S.lbs * S.spot;
+    const assets = S.cash + copperValue;
+    const interestDue = intv(S.loans_beg);
+    const liabilities = S.loans + interestDue;
+    const nw = roundMoney(assets - liabilities);
+    console.log('nwStart: assets(' + roundMoney(assets) + ') - liabilities(' + roundMoney(liabilities) + ') =', nw);
+    return nw;
+  };
+
   const nwAfter = () => roundMoney((S.cash + S.lbs * S.spot) - S.loans);
-  const credit = () => roundMoney(LINE_OF_CREDIT + nwStart());
+
+  const credit = () => {
+    const nw = nwStart();
+    const creditLimit = roundMoney(LINE_OF_CREDIT + nw);
+    console.log('credit: LINE_OF_CREDIT(' + LINE_OF_CREDIT + ') + nwStart(' + nw + ') =', creditLimit);
+    return creditLimit;
+  };
 
   const fmt = n => {
     const v = Number(n);
@@ -146,7 +167,9 @@
   }
 
   function updateCreditLimit() {
-    const available = Math.max(0, credit() - S.loans);
+    const creditVal = credit();
+    const available = Math.max(0, creditVal - S.loans);
+    console.log('updateCreditLimit: credit()=' + creditVal + ', S.loans=' + S.loans + ', available=' + available + ', displayed=' + fmt(available));
     document.getElementById('creditLimit').textContent = fmt(available);
   }
 
@@ -292,15 +315,38 @@
       }
 
       if (loanAction === 'borrow' && loanAmt > 0) {
-        const lim = roundMoney(Math.max(0, credit() - S.loans));
+        console.log('=== BORROW VALIDATION DEBUG ===');
+        console.log('Current state:');
+        console.log('  S.cash:', S.cash);
+        console.log('  S.loans:', S.loans);
+        console.log('  S.lbs:', S.lbs);
+        console.log('  S.spot:', S.spot);
+        console.log('  S.loans_beg:', S.loans_beg);
+
+        console.log('Calculations:');
+        console.log('  Copper value (S.lbs * S.spot):', S.lbs * S.spot);
+        const creditVal = credit();
+        const availableCredit = creditVal - S.loans;
+        console.log('  Available credit (credit() - S.loans):', availableCredit);
+
+        const lim = roundMoney(Math.max(0, availableCredit));
         const roundedLoanAmt = roundMoney(loanAmt);
+        console.log('  lim (after roundMoney & Math.max):', lim);
+        console.log('  loanAmt requested:', loanAmt);
+        console.log('  roundedLoanAmt:', roundedLoanAmt);
+        console.log('  roundedLoanAmt > lim + 0.01?', roundedLoanAmt > lim + 0.01);
+        console.log('  Difference (roundedLoanAmt - lim):', roundedLoanAmt - lim);
+
         // Use epsilon tolerance for comparison
         if (roundedLoanAmt > lim + 0.01) {
+          console.log('>>> REJECTED: roundedLoanAmt > lim + 0.01');
           showError('Borrow exceeds credit limit.');
           return;
         }
+        console.log('>>> APPROVED: Proceeding with borrow');
         S.loans = roundMoney(S.loans + roundedLoanAmt);
         S.cash = roundMoney(S.cash + roundedLoanAmt);
+        console.log('After borrow - S.loans:', S.loans, 'S.cash:', S.cash);
       }
 
       if (copperAction === 'sell' && copperAmt > 0) {
@@ -595,6 +641,32 @@
   document.getElementById('playerName').addEventListener('input', function() {
     this.style.borderColor = 'var(--gray-200)';
   });
+
+  // ===== Debug Functions (exposed globally) =====
+  window.debugBorrow = function(amount) {
+    console.log('=== DEBUG BORROW TEST ===');
+    console.log('Attempting to borrow:', amount);
+    console.log('Current S:', JSON.stringify(S, null, 2));
+    console.log('---');
+    const nw = nwStart();
+    const creditLimit = credit();
+    const available = Math.max(0, creditLimit - S.loans);
+    console.log('nwStart():', nw);
+    console.log('credit():', creditLimit);
+    console.log('Available (credit - S.loans):', available);
+    console.log('Rounded available:', roundMoney(available));
+    console.log('---');
+    console.log('Would pass validation?', roundMoney(amount) <= roundMoney(available) + 0.01);
+    console.log('Difference:', roundMoney(amount) - roundMoney(available));
+  };
+
+  window.debugState = function() {
+    console.log('=== CURRENT GAME STATE ===');
+    console.log('S:', JSON.stringify(S, null, 2));
+    console.log('nwStart():', nwStart());
+    console.log('credit():', credit());
+    console.log('Available credit:', Math.max(0, credit() - S.loans));
+  };
 
   // Initialize
   restart();
