@@ -93,10 +93,11 @@
   // ===== Helpers =====
   const toInt = n => Math.max(0, Math.floor(Number(n) || 0));
   const toNum = n => Math.max(0, Number(n) || 0);
-  const intv = x => x * INTEREST / 100;
-  const nwStart = () => (S.cash + S.lbs * S.spot) - (S.loans + intv(S.loans_beg));
-  const nwAfter = () => (S.cash + S.lbs * S.spot) - S.loans;
-  const credit = () => LINE_OF_CREDIT + nwStart();
+  const roundMoney = n => Math.round(n * 100) / 100;
+  const intv = x => roundMoney(x * INTEREST / 100);
+  const nwStart = () => roundMoney((S.cash + S.lbs * S.spot) - (S.loans + intv(S.loans_beg)));
+  const nwAfter = () => roundMoney((S.cash + S.lbs * S.spot) - S.loans);
+  const credit = () => roundMoney(LINE_OF_CREDIT + nwStart());
 
   const fmt = n => {
     const v = Number(n);
@@ -274,6 +275,9 @@
 
   function processTurn() {
     try {
+      // Prevent processing if game is already over
+      if (S.over) return;
+
       showError('');
       const prevNW = S.prevNW;
       const intThis = intv(S.loans_beg);
@@ -288,16 +292,15 @@
       }
 
       if (loanAction === 'borrow' && loanAmt > 0) {
-        const lim = Math.max(0, credit() - S.loans);
-        // Round both to 2 decimal places to avoid floating point issues
-        const roundedLoanAmt = Math.round(loanAmt * 100) / 100;
-        const roundedLim = Math.round(lim * 100) / 100;
-        if (roundedLoanAmt > roundedLim) {
+        const lim = roundMoney(Math.max(0, credit() - S.loans));
+        const roundedLoanAmt = roundMoney(loanAmt);
+        // Use epsilon tolerance for comparison
+        if (roundedLoanAmt > lim + 0.01) {
           showError('Borrow exceeds credit limit.');
           return;
         }
-        S.loans += loanAmt;
-        S.cash += loanAmt;
+        S.loans = roundMoney(S.loans + roundedLoanAmt);
+        S.cash = roundMoney(S.cash + roundedLoanAmt);
       }
 
       if (copperAction === 'sell' && copperAmt > 0) {
@@ -306,46 +309,52 @@
           return;
         }
         S.lbs -= copperAmt;
-        S.cash += copperAmt * S.spot;
+        S.cash = roundMoney(S.cash + copperAmt * S.spot);
       }
 
       if (copperAction === 'buy' && copperAmt > 0) {
-        const cost = copperAmt * S.spot;
-        // Round to 2 decimals for comparison to handle floating point issues
-        const roundedCost = Math.round(cost * 100) / 100;
-        const roundedCash = Math.round(S.cash * 100) / 100;
-        if (roundedCost > roundedCash) {
+        const cost = roundMoney(copperAmt * S.spot);
+        // Use epsilon tolerance for comparison
+        if (cost > S.cash + 0.01) {
           showError('Not enough cash to buy that many lbs.');
           return;
         }
         S.lbs += copperAmt;
-        S.cash -= cost;
+        S.cash = roundMoney(S.cash - cost);
       }
 
       if (loanAction === 'repay' && loanAmt > 0) {
-        const pay = Math.min(loanAmt, S.cash, S.loans);
+        const pay = roundMoney(Math.min(loanAmt, S.cash, S.loans));
         if (pay <= 0) {
           showError('Nothing to repay (check cash and loans).');
           return;
         }
-        S.loans -= pay;
-        S.cash -= pay;
+        S.loans = roundMoney(S.loans - pay);
+        S.cash = roundMoney(S.cash - pay);
       }
 
-      if (S.cash < intThis - 0.001) {
+      // Use epsilon tolerance for interest validation
+      if (S.cash < intThis - 0.01) {
         showError(`Interest payment of $${intThis.toFixed(2)} not covered.`);
         gameOver(`Interest payment of $${intThis.toFixed(2)} not covered`, false);
         return;
       }
-      S.cash -= intThis;
+      S.cash = roundMoney(S.cash - intThis);
 
       // Prevent tiny negative cash from floating point errors
-      if (S.cash < 0 && S.cash > -0.01) S.cash = 0;
+      if (S.cash < 0) S.cash = 0;
 
       // Calculate what net worth will be displayed at start of NEXT turn
       const nextSpot = MARKET[S.year - 1].next;
       const nextIntDue = intv(S.loans);
-      const displayedNW = (S.cash + S.lbs * nextSpot) - (S.loans + nextIntDue);
+      const displayedNW = roundMoney((S.cash + S.lbs * nextSpot) - (S.loans + nextIntDue));
+
+      // Validate state - check for NaN corruption
+      if (!Number.isFinite(displayedNW) || !Number.isFinite(S.cash) || !Number.isFinite(S.loans)) {
+        showError('Game state error - please restart.');
+        S.over = true;
+        return;
+      }
 
       // Track negative net worth
       if (displayedNW < 0) {
@@ -416,11 +425,12 @@
   let finalParPercent = 0;
 
   function finishGame() {
+    S.over = true;
     stopTimer();
     if (!PAR) PAR = simulatePar();
     const lastNext = MARKET[YEARS - 1].next;
     const score = (S.cash + S.lbs * lastNext) - S.loans;
-    finalScore = Math.round(score * 100) / 100; // Round to 2 decimal places
+    finalScore = roundMoney(score);
 
     showGameover('Game Complete!', true);
     document.getElementById('finalScore').textContent = '$' + fmt(finalScore);
@@ -449,6 +459,7 @@
   }
 
   function gameOver(msg, isWin, detail) {
+    S.over = true;
     stopTimer();
     showGameover('Game Over', false);
 
@@ -477,7 +488,7 @@
     try {
       await db.collection('leaderboard').add({
         name: name,
-        score: Math.round(score * 100) / 100, // Round to 2 decimal places
+        score: roundMoney(score),
         time: time,
         parPercent: parPercent,
         date: new Date().toISOString()
