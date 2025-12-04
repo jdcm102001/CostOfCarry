@@ -423,6 +423,37 @@ body {
   color: var(--gray-800);
 }
 
+/* Instructions Table */
+.instructions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.instructions-table th,
+.instructions-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--gray-200);
+}
+
+.instructions-table th {
+  background: var(--gray-100);
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.instructions-table td:first-child {
+  font-weight: 600;
+  color: var(--gray-700);
+  width: 100px;
+}
+
+.instructions-table td:last-child {
+  color: var(--gray-600);
+}
+
 /* =====================================================
    Actions Section
    ===================================================== */
